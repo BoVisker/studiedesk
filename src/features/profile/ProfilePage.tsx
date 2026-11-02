@@ -1,4 +1,4 @@
-import { Download, LogOut, Trash2 } from 'lucide-react'
+import { Download, LogOut, ShieldCheck, Trash2 } from 'lucide-react'
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/app/AuthProvider'
@@ -13,7 +13,7 @@ import { supabase } from '@/lib/supabase'
 import { useAiUsage } from '@/lib/useAiUsage'
 
 export function ProfilePage() {
-  const { profile, session, updateProfile, signOut } = useAuth()
+  const { profile, session, isAdmin, updateProfile, signOut } = useAuth()
   const { resolved } = useTheme()
   const { usage, error: usageError } = useAiUsage()
   const [name, setName] = useState('')
@@ -101,6 +101,18 @@ export function ProfilePage() {
             <ThemeToggle showLabels />
           </div>
         </Card>
+
+        {isAdmin && (
+          <Card className="flex items-center justify-between gap-3">
+            <div>
+              <CardTitle>Beheer</CardTitle>
+              <p className="text-sm text-muted">Nodig mensen uit voor StudieDesk.</p>
+            </div>
+            <Link to="/beheer" className="inline-flex items-center gap-2 text-sm font-medium underline underline-offset-4">
+              <ShieldCheck className="size-4" aria-hidden="true" /> Uitnodigingen
+            </Link>
+          </Card>
+        )}
 
         <Card className="flex flex-col gap-3">
           <CardTitle>AI-hulp vandaag</CardTitle>

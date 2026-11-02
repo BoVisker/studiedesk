@@ -37,3 +37,12 @@
   --accent: var(--accent-dark, #eee7d8);
   --on-accent: #0e1a2f;
 }
+
+/* Vak-accent: zet --accent-light/--accent-dark op een container met deze
+   klasse (zie accentProps in src/design/subjectPalette.ts). */
+.accent-scope {
+  --accent: var(--accent-light);
+}
+:root[data-theme='dark'] .accent-scope {
+  --accent: var(--accent-dark);
+}

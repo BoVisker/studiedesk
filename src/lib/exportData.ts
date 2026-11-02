@@ -2,7 +2,7 @@ import { supabase } from './supabase'
 
 // Tabellen die in de JSON-export komen. Nieuwe tabellen met gebruikersdata
 // hier toevoegen (RLS zorgt dat je alleen je eigen rijen krijgt).
-export const EXPORT_TABLES = ['profiles', 'ai_usage'] as const
+export const EXPORT_TABLES = ['profiles', 'ai_usage', 'user_subjects'] as const
 
 export async function exportMyData(): Promise<Blob> {
   const { data: user } = await supabase.auth.getUser()

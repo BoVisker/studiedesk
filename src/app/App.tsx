@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { HashRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { AppShell } from '@/components/layout/AppShell'
 import { Spinner } from '@/components/ui'
@@ -7,24 +8,39 @@ import { HomePage } from '@/features/home/HomePage'
 import { PlaceholderPage } from '@/features/home/PlaceholderPage'
 import { SetupPage } from '@/features/home/SetupPage'
 import { PrivacyPage } from '@/features/legal/PrivacyPage'
-import { ProfilePage } from '@/features/profile/ProfilePage'
+import { SubjectPickerPage } from '@/features/subjects/SubjectPickerPage'
+import { SubjectsPage } from '@/features/subjects/SubjectsPage'
+import { SubjectsProvider } from '@/features/subjects/SubjectsProvider'
 import { env } from '@/lib/env'
+
+// Zwaardere pagina's pas laden als ze geopend worden.
+const SubjectPage = lazy(() => import('@/features/subjects/SubjectPage').then((m) => ({ default: m.SubjectPage })))
+const InvitesPage = lazy(() => import('@/features/admin/InvitesPage').then((m) => ({ default: m.InvitesPage })))
+const ProfilePage = lazy(() => import('@/features/profile/ProfilePage').then((m) => ({ default: m.ProfilePage })))
 import { AuthProvider, useAuth } from './AuthProvider'
 import { ThemeProvider } from './ThemeProvider'
+
+function FullPageSpinner() {
+  return (
+    <div className="grid min-h-dvh place-items-center">
+      <Spinner label="Laden…" />
+    </div>
+  )
+}
 
 function RequireAuth() {
   const { session, loading, recovering } = useAuth()
   const location = useLocation()
-  if (loading) {
-    return (
-      <div className="grid min-h-dvh place-items-center">
-        <Spinner label="Laden…" />
-      </div>
-    )
-  }
+  if (loading) return <FullPageSpinner />
   if (!session) return <Navigate to="/inloggen" replace state={{ from: location }} />
   if (recovering && location.pathname !== '/nieuw-wachtwoord') return <Navigate to="/nieuw-wachtwoord" replace />
-  return <Outlet />
+  return (
+    <SubjectsProvider>
+      <Suspense fallback={<FullPageSpinner />}>
+        <Outlet />
+      </Suspense>
+    </SubjectsProvider>
+  )
 }
 
 export function App() {
@@ -39,7 +55,10 @@ export function App() {
             <Route element={<RequireAuth />}>
               <Route element={<AppShell />}>
                 <Route index element={<HomePage />} />
-                <Route path="vakken" element={<PlaceholderPage title="Vakken" text="Hier kies je straks je vakken en open je per vak een eigen voorpagina." />} />
+                <Route path="vakken" element={<SubjectsPage />} />
+                <Route path="vakken/kiezen" element={<SubjectPickerPage />} />
+                <Route path="vakken/:slug" element={<SubjectPage />} />
+                <Route path="beheer" element={<InvitesPage />} />
                 <Route path="planner" element={<PlaceholderPage title="Planner" text="De toetsplanner komt in een volgende versie." />} />
                 <Route path="cijfers" element={<PlaceholderPage title="Cijfers" text="De cijfermodule komt in een volgende versie." />} />
                 <Route path="profiel" element={<ProfilePage />} />

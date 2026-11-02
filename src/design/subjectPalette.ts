@@ -37,10 +37,13 @@ export const themeBase = {
 // Avatar-kleuren voor het profiel (zelfde contrasteisen, dus hergebruik).
 export const avatarColors = ['engels', 'wiskunde-a', 'nederlands', 'filosofie', 'duits', 'latijn'] as const
 
-/** CSS-variabelen voor een vak: gebruik als `style` op een container. */
-export function accentVars(slug: SubjectSlug): CSSProperties {
+/** Props voor een container met de accentkleur van een vak: `<div {...accentProps(slug)}>`. */
+export function accentProps(slug: SubjectSlug, className = ''): { className: string; style: CSSProperties } {
   const c = subjectPalette[slug]
-  return { '--accent-light': c.light, '--accent-dark': c.dark } as CSSProperties
+  return {
+    className: `accent-scope ${className}`.trim(),
+    style: { '--accent-light': c.light, '--accent-dark': c.dark } as CSSProperties,
+  }
 }
 
 export function relativeLuminance(hex: string): number {

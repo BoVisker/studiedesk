@@ -1,5 +1,5 @@
 export { Alert } from './Alert'
-export { Button } from './Button'
+export { Button, buttonClass } from './Button'
 export { Card, CardTitle } from './Card'
 export { cx } from './cx'
 export { Dialog } from './Dialog'

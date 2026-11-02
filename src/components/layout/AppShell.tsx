@@ -1,10 +1,11 @@
-import { BookOpen, CalendarDays, GraduationCap, Home, UserRound } from 'lucide-react'
+import { BookOpen, CalendarDays, GraduationCap, Home, ShieldCheck, UserRound } from 'lucide-react'
+import { Suspense } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '@/app/AuthProvider'
-import { cx } from '@/components/ui'
+import { cx, Spinner } from '@/components/ui'
 import { Avatar } from './Avatar'
 
-// Vakken, planner en cijfers zijn nog placeholders (fase 2, 6, 7).
+// Planner en cijfers zijn nog placeholders (fase 6, 7).
 const nav = [
   { to: '/', label: 'Vandaag', Icon: Home, end: true },
   { to: '/vakken', label: 'Vakken', Icon: BookOpen },
@@ -13,7 +14,7 @@ const nav = [
 ]
 
 export function AppShell() {
-  const { profile, session } = useAuth()
+  const { profile, session, isAdmin } = useAuth()
   const name = profile?.display_name || session?.user.email || ''
 
   return (
@@ -39,7 +40,18 @@ export function AppShell() {
             </NavLink>
           ))}
         </nav>
-        <NavLink to="/profiel" className="mt-auto flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-surface-2">
+        {isAdmin && (
+          <NavLink
+            to="/beheer"
+            className={({ isActive }) =>
+              cx('mt-auto flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition', isActive ? 'bg-surface-2 font-semibold' : 'text-muted hover:bg-surface-2 hover:text-text')
+            }
+          >
+            <ShieldCheck className="size-5" aria-hidden="true" />
+            Uitnodigingen
+          </NavLink>
+        )}
+        <NavLink to="/profiel" className={cx(!isAdmin && 'mt-auto', 'flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-surface-2')}>
           <Avatar name={name} color={profile?.avatar_color ?? 'engels'} />
           <span className="min-w-0 truncate text-sm">{name}</span>
         </NavLink>
@@ -53,7 +65,10 @@ export function AppShell() {
       </header>
 
       <main id="main" className="mx-auto w-full max-w-4xl px-4 pb-28 pt-6 md:px-8 md:pb-12 md:pt-10">
-        <Outlet />
+        {/* Binnen de shell, zodat de navigatie blijft staan terwijl een pagina laadt. */}
+        <Suspense fallback={<div className="grid place-items-center py-20"><Spinner label="Laden…" /></div>}>
+          <Outlet />
+        </Suspense>
       </main>
 
       <nav

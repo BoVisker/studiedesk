@@ -9,6 +9,8 @@ export type Profile = Database['public']['Tables']['profiles']['Row']
 type AuthCtx = {
   session: Session | null
   profile: Profile | null
+  /** Mag uitnodigingen beheren (tabel public.admins). */
+  isAdmin: boolean
   loading: boolean
   /** True direct na het openen van een wachtwoord-herstellink. */
   recovering: boolean
@@ -25,6 +27,7 @@ const Ctx = createContext<AuthCtx | null>(null)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [loading, setLoading] = useState(true)
   // Het PASSWORD_RECOVERY-event kan al vóór onze subscribe vallen, daarom ook
   // de marker uit de redirect-URL (zie LoginPage).
@@ -34,8 +37,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loadProfile = useCallback(
     async (userId: string) => {
-      const { data } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
+      const [{ data }, admin] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
+        supabase.rpc('is_admin'),
+      ])
       setProfile(data)
+      setIsAdmin(admin.data === true)
       // Thema uit het profiel wint van localStorage (synchroniseert tussen apparaten).
       if (data) setPref(data.theme)
     },
@@ -52,7 +59,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s)
       if (event === 'PASSWORD_RECOVERY') setRecovering(true)
-      if (event === 'SIGNED_OUT') setProfile(null)
+      if (event === 'SIGNED_OUT') {
+        setProfile(null)
+        setIsAdmin(false)
+      }
       if (event === 'SIGNED_IN' && s) setTimeout(() => loadProfile(s.user.id), 0)
     })
     return () => sub.subscription.unsubscribe()
@@ -61,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value: AuthCtx = {
     session,
     profile,
+    isAdmin,
     loading,
     recovering,
     authError,

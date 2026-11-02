@@ -7,6 +7,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      admins: {
+        Row: { created_at: string; user_id: string }
+        Insert: { created_at?: string; user_id: string }
+        Update: { created_at?: string; user_id?: string }
+        Relationships: []
+      }
       ai_usage: {
         Row: { count: number; day: string; user_id: string }
         Insert: { count?: number; day?: string; user_id: string }
@@ -47,17 +53,28 @@ export type Database = {
         Relationships: []
       }
       signup_allowlist: {
-        Row: { created_at: string; email: string; note: string | null }
-        Insert: { created_at?: string; email: string; note?: string | null }
-        Update: { created_at?: string; email?: string; note?: string | null }
+        Row: { created_at: string; email: string; invited_by: string | null; note: string | null }
+        Insert: { created_at?: string; email: string; invited_by?: string | null; note?: string | null }
+        Update: { created_at?: string; email?: string; invited_by?: string | null; note?: string | null }
+        Relationships: []
+      }
+      user_subjects: {
+        Row: { blocks: Json; created_at: string; position: number; subject: string; updated_at: string; user_id: string }
+        Insert: { blocks?: Json; created_at?: string; position?: number; subject: string; updated_at?: string; user_id?: string }
+        Update: { blocks?: Json; created_at?: string; position?: number; subject?: string; updated_at?: string; user_id?: string }
         Relationships: []
       }
     }
     Views: { [_ in never]: never }
     Functions: {
+      admin_list_invites: {
+        Args: never
+        Returns: { created_at: string; email: string; note: string; registered: boolean }[]
+      }
       ai_daily_limit: { Args: never; Returns: number }
       ai_usage_today: { Args: never; Returns: { daily_limit: number; remaining: number; used: number }[] }
       consume_ai_credit: { Args: never; Returns: number }
+      is_admin: { Args: never; Returns: boolean }
     }
     Enums: { theme_pref: 'light' | 'dark' | 'system' }
     CompositeTypes: { [_ in never]: never }

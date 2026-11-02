@@ -12,6 +12,17 @@ const styles: Record<Variant, string> = {
   danger: 'bg-danger text-on-ink hover:opacity-90',
 }
 
+/** Knopstijl, ook bruikbaar voor links (`<Link className={buttonClass('outline')}>`). */
+export function buttonClass(variant: Variant = 'primary', size: 'sm' | 'md' = 'md', className?: string) {
+  return cx(
+    'inline-flex items-center justify-center gap-2 rounded-xl font-medium transition',
+    'disabled:cursor-not-allowed disabled:opacity-50 active:translate-y-px',
+    size === 'sm' ? 'h-9 px-3 text-sm' : 'h-11 px-4',
+    styles[variant],
+    className,
+  )
+}
+
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant; loading?: boolean; size?: 'sm' | 'md' }
 
 export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
@@ -23,13 +34,7 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
       ref={ref}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
-      className={cx(
-        'inline-flex items-center justify-center gap-2 rounded-xl font-medium transition',
-        'disabled:cursor-not-allowed disabled:opacity-50 active:translate-y-px',
-        size === 'sm' ? 'h-9 px-3 text-sm' : 'h-11 px-4',
-        styles[variant],
-        className,
-      )}
+      className={buttonClass(variant, size, className)}
       {...rest}
     >
       {loading && <Spinner className="size-4" />}

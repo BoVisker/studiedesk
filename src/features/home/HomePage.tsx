@@ -1,8 +1,11 @@
 import { BookOpen, CalendarDays, Sparkles } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { useAuth } from '@/app/AuthProvider'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { Card, CardTitle, EmptyState } from '@/components/ui'
+import { Card, CardTitle, EmptyState, Skeleton } from '@/components/ui'
+import { accentProps } from '@/design/subjectPalette'
+import { SubjectIcon } from '@/features/subjects/SubjectIcon'
+import { useSubjects } from '@/features/subjects/SubjectsProvider'
 
 function greeting(d = new Date()) {
   const h = d.getHours()
@@ -11,7 +14,11 @@ function greeting(d = new Date()) {
 
 export function HomePage() {
   const { profile } = useAuth()
+  const { chosen, error } = useSubjects()
   const today = new Intl.DateTimeFormat('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date())
+
+  // Eerste keer: eerst vakken kiezen.
+  if (chosen && !error && chosen.length === 0) return <Navigate to="/vakken/kiezen?start" replace />
 
   return (
     <>
@@ -27,10 +34,28 @@ export function HomePage() {
           </EmptyState>
         </Card>
         <Card className="rise-in">
-          <CardTitle className="mb-2">Je vakken</CardTitle>
-          <p className="mb-4 text-sm text-muted">Kies je vakken om per vak lijsten, samenvattingen en toetsen bij te houden.</p>
+          <CardTitle className="mb-3">Je vakken</CardTitle>
+          {!chosen ? (
+            <Skeleton className="h-16" />
+          ) : (
+            <ul className="mb-4 flex flex-wrap gap-2">
+              {chosen.map(({ def }) => (
+                <li key={def.slug}>
+                  <Link
+                    to={`/vakken/${def.slug}`}
+                    {...accentProps(def.slug, 'inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1 text-sm transition hover:border-accent')}
+                  >
+                    <span className="text-accent">
+                      <SubjectIcon name={def.icon} className="size-4" />
+                    </span>
+                    {def.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
           <Link to="/vakken" className="inline-flex items-center gap-2 text-sm font-medium underline underline-offset-4">
-            <BookOpen className="size-4" aria-hidden="true" /> Naar vakken
+            <BookOpen className="size-4" aria-hidden="true" /> Alle vakken
           </Link>
         </Card>
         <Card className="rise-in">

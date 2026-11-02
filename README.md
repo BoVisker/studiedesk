@@ -3,7 +3,7 @@
 Leerdashboard voor VWO-leerlingen: per vak leren, toetsen plannen en cijfers bijhouden.
 Vite + React + TypeScript + Tailwind, gehost op GitHub Pages, met Supabase (Auth, Postgres, Storage, Edge Functions) als backend.
 
-> **Status:** fase 1: project, deploy, Supabase-koppeling, inloggen, thema's en design-systeem.
+> **Status:** fase 1 (project, deploy, auth, thema's) en fase 2 (vakkeuze en template-systeem met placeholder-blokken) zijn klaar.
 
 ## Architectuur in het kort
 
@@ -57,11 +57,13 @@ npm run test:db   # pgTAP: RLS, uitnodigingslijst, AI-limiet
    supabase link --project-ref <project-ref>
    supabase db push
    ```
-3. Nodig gebruikers uit via de **SQL Editor**:
+3. Nodig jezelf uit en maak jezelf beheerder via de **SQL Editor**. Zet e-mailadressen nooit in een migratie, want de repo is openbaar.
    ```sql
    insert into public.signup_allowlist (email) values ('jij@voorbeeld.nl');
+   -- na registratie:
+   insert into public.admins (user_id) select id from auth.users where email = 'jij@voorbeeld.nl';
    ```
-   Open registratie voor iedereen? Voer dan `drop trigger enforce_signup_allowlist on auth.users;` uit.
+   Beheerders nodigen daarna anderen uit via **Uitnodigingen** in de app. Open registratie voor iedereen? Voer dan `drop trigger enforce_signup_allowlist on auth.users;` uit.
 4. Zet onder **Authentication → URL Configuration**:
    - Site URL: `https://<github-user>.github.io/<repo>/`
    - Redirect URLs: `https://<github-user>.github.io/<repo>/` en `http://localhost:5173/`
@@ -77,6 +79,7 @@ npm run test:db   # pgTAP: RLS, uitnodigingslijst, AI-limiet
    supabase functions deploy delete-account
    ```
 7. Database-types opnieuw genereren na een migratie: `npm run db:types`.
+8. Zijn migraties via het dashboard of de MCP-koppeling toegepast in plaats van met `supabase db push`? Dan verschillen de versienummers. Kijk met `supabase migration list` en lijn ze eenmalig uit met `supabase migration repair --status applied <versie>`.
 
 ### AI-limiet aanpassen
 
@@ -103,7 +106,21 @@ Let op: de uitnodigingslijst geldt ook voor Google-accounts.
    Dit zijn variabelen en geen secrets: ze belanden toch in de publieke bundle.
 4. Elke push naar `main` draait de tests, bouwt de site en deployt naar `https://<github-user>.github.io/<repo>/`.
 
-## 4. Privacy en data
+## 4. Vakken en blokken (template-systeem)
+
+- `src/config/subjects.ts` legt per vak het archetype, het icoon, de accentkleur en de standaardblokken vast.
+- `src/config/blocks.ts` is het register van alle blokken: titel, omschrijving en of het blok al werkt.
+- Per gebruiker staat in `user_subjects.blocks` een lijst `{id, enabled, title?}`. `resolveBlocks()` combineert die met de config: de eigen volgorde, aan/uit en titels blijven behouden, nieuwe blokken komen achteraan en verouderde verdwijnen.
+- Een nieuw blok toevoegen gaat zo:
+  1. Registreer het in `blocks.ts`.
+  2. Zet het bij de juiste vakken in `subjects.ts`.
+  3. Geef het een eigen component in `BlockCard.tsx`.
+- Een nieuw vak toevoegen gaat zo:
+  1. Zet het in `subjects.ts` en `subjectPalette.ts`.
+  2. Maak een migratie die de check-constraint op `user_subjects.subject` uitbreidt.
+  3. Een test controleert dat config en migratie overeenkomen.
+
+## 5. Privacy en data
 
 - Geen analytics, geen advertenties. De lettertypes worden mee-gebundeld, dus er gaan geen verzoeken naar Google Fonts.
 - Gebruikers kunnen op de profielpagina hun data exporteren (JSON) en hun account verwijderen.
@@ -113,7 +130,7 @@ Let op: de uitnodigingslijst geldt ook voor Google-accounts.
   2. Voeg ze toe aan `EXPORT_TABLES` in `src/lib/exportData.ts`.
   3. Voeg een pgTAP-test toe.
 
-## 5. Design-systeem: "papier & inkt"
+## 6. Design-systeem: "papier & inkt"
 
 - Alle kleuren zijn CSS-variabelen in `src/styles/tokens.css`. Tailwind leest ze via `@theme` (`bg-surface`, `text-muted`, `bg-accent`, …).
 - Het thema (licht, donker of systeem) staat in `localStorage` en in `profiles.theme`. Een inline script in `index.html` zet het thema vóór de eerste paint, zodat er geen flits is.
