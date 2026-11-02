@@ -103,7 +103,7 @@ export function SubjectPickerPage() {
         <div className="mx-auto flex max-w-4xl flex-wrap items-center gap-3">
           <p className="flex-1 text-sm text-muted" aria-live="polite">
             {selected.size === 0 ? 'Nog geen vakken gekozen' : `${selected.size} ${selected.size === 1 ? 'vak' : 'vakken'} gekozen`}
-            {removedCount > 0 && ` · ${removedCount} weggehaald (blokinstellingen van die vakken vervallen)`}
+            {removedCount > 0 && ` · ${removedCount} weggehaald (je lijsten blijven bewaard)`}
           </p>
           {error && <Alert tone="error">{error}</Alert>}
           {!onboarding && (

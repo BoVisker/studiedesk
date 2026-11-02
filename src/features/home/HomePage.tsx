@@ -1,8 +1,10 @@
-import { BookOpen, CalendarDays, Sparkles } from 'lucide-react'
+import { BookOpen, CalendarDays, RotateCcw, Sparkles } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { useAuth } from '@/app/AuthProvider'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { Card, CardTitle, EmptyState, Skeleton } from '@/components/ui'
+import { buttonClass, Card, CardTitle, EmptyState, Skeleton } from '@/components/ui'
+import { countDue } from '@/features/lists/api'
 import { accentProps } from '@/design/subjectPalette'
 import { SubjectIcon } from '@/features/subjects/SubjectIcon'
 import { useSubjects } from '@/features/subjects/SubjectsProvider'
@@ -15,6 +17,11 @@ function greeting(d = new Date()) {
 export function HomePage() {
   const { profile } = useAuth()
   const { chosen, error } = useSubjects()
+  const [due, setDue] = useState<number | null>(null)
+
+  useEffect(() => {
+    countDue().then(setDue).catch(() => setDue(null))
+  }, [])
   const today = new Intl.DateTimeFormat('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date())
 
   // Eerste keer: eerst vakken kiezen.
@@ -60,9 +67,23 @@ export function HomePage() {
         </Card>
         <Card className="rise-in">
           <CardTitle className="mb-2">Te herhalen</CardTitle>
-          <p className="flex items-center gap-2 text-sm text-muted">
-            <Sparkles className="size-4" aria-hidden="true" /> Nog geen woordenlijsten. Die komen in een volgende versie.
-          </p>
+          {due === null ? (
+            <Skeleton className="h-10" />
+          ) : due === 0 ? (
+            <p className="flex items-center gap-2 text-sm text-muted">
+              <Sparkles className="size-4" aria-hidden="true" /> Niets te herhalen vandaag. Open een vak om een lijst te maken of te leren.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-3">
+              <p>
+                <span className="font-display text-3xl font-semibold">{due}</span>
+                <span className="text-muted"> {due === 1 ? 'item' : 'items'} klaar om te herhalen</span>
+              </p>
+              <Link to="/herhalen" className={buttonClass('primary', 'sm', 'self-start')}>
+                <RotateCcw className="size-4" aria-hidden="true" /> Herhalen
+              </Link>
+            </div>
+          )}
         </Card>
       </div>
     </>

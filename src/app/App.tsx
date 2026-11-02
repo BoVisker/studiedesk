@@ -16,6 +16,9 @@ import { env } from '@/lib/env'
 // Zwaardere pagina's pas laden als ze geopend worden.
 const SubjectPage = lazy(() => import('@/features/subjects/SubjectPage').then((m) => ({ default: m.SubjectPage })))
 const InvitesPage = lazy(() => import('@/features/admin/InvitesPage').then((m) => ({ default: m.InvitesPage })))
+const ListEditorPage = lazy(() => import('@/features/lists/ListEditorPage').then((m) => ({ default: m.ListEditorPage })))
+const ListPage = lazy(() => import('@/features/lists/ListPage').then((m) => ({ default: m.ListPage })))
+const StudyPage = lazy(() => import('@/features/study/StudyPage').then((m) => ({ default: m.StudyPage })))
 const ProfilePage = lazy(() => import('@/features/profile/ProfilePage').then((m) => ({ default: m.ProfilePage })))
 import { AuthProvider, useAuth } from './AuthProvider'
 import { ThemeProvider } from './ThemeProvider'
@@ -58,6 +61,11 @@ export function App() {
                 <Route path="vakken" element={<SubjectsPage />} />
                 <Route path="vakken/kiezen" element={<SubjectPickerPage />} />
                 <Route path="vakken/:slug" element={<SubjectPage />} />
+                <Route path="lijsten/nieuw" element={<ListEditorPage />} />
+                <Route path="lijsten/:id" element={<ListPage />} />
+                <Route path="lijsten/:id/bewerken" element={<ListEditorPage />} />
+                <Route path="lijsten/:id/leren" element={<StudyPage />} />
+                <Route path="herhalen" element={<StudyPage />} />
                 <Route path="beheer" element={<InvitesPage />} />
                 <Route path="planner" element={<PlaceholderPage title="Planner" text="De toetsplanner komt in een volgende versie." />} />
                 <Route path="cijfers" element={<PlaceholderPage title="Cijfers" text="De cijfermodule komt in een volgende versie." />} />

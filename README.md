@@ -3,7 +3,7 @@
 Leerdashboard voor VWO-leerlingen: per vak leren, toetsen plannen en cijfers bijhouden.
 Vite + React + TypeScript + Tailwind, gehost op GitHub Pages, met Supabase (Auth, Postgres, Storage, Edge Functions) als backend.
 
-> **Status:** fase 1 (project, deploy, auth, thema's) en fase 2 (vakkeuze en template-systeem met placeholder-blokken) zijn klaar.
+> **Status:** fase 1 t/m 3 zijn klaar: project, auth, thema's, vakkeuze, template-systeem, lijsten en alle leervormen met spaced repetition.
 
 ## Architectuur in het kort
 
@@ -120,7 +120,25 @@ Let op: de uitnodigingslijst geldt ook voor Google-accounts.
   2. Maak een migratie die de check-constraint op `user_subjects.subject` uitbreidt.
   3. Een test controleert dat config en migratie overeenkomen.
 
-## 5. Privacy en data
+## 5. Lijsten en leren
+
+- **Lijsten** (`lists` en `list_items`) hebben een soort: woorden, begrippen of formules. Die soort bepaalt de kolomnamen. Je maakt een lijst handmatig of via **Plakken**: per regel een tab, `=`, ` - `, `;` of `,`, die automatisch wordt herkend (`importParser.ts`).
+- **Leervormen:** flashcards (omdraaien en swipen), typen, meerkeuze en toets (met cijfer `1 + 9 × score`).
+- **Antwoordcontrole** (`answerCheck.ts`):
+  - hoofdletters en accenten zijn aparte instellingen;
+  - meerdere antwoorden scheid je met `,` `;` of `/`;
+  - `(haakjes)` zijn optioneel;
+  - "bijna goed" bij een kleine typefout of alleen een accentverschil, met de keuze om het toch goed te rekenen.
+- **Spaced repetition: Leitner met 6 bakjes** (`srs.ts`):
+  - goed: een bakje verder, en het item komt over 1, 2, 4, 8, 16 of 32 dagen terug;
+  - fout: terug naar bakje 1, morgen opnieuw;
+  - binnen een sessie komen foute items terug tot ze goed zijn, maar alleen de eerste poging telt voor het bakje;
+  - een item telt per bezoek aan een leerpagina maar één keer mee. "Opnieuw" en "alleen de foute" zijn extra oefening.
+- De herhaalstatus geldt per item, niet per richting.
+- **Sneltoetsen:** spatie draait om, 1/2 of ←/→ is fout/goed, 1–4 kiest bij meerkeuze, Enter gaat verder.
+- **Tekst-naar-spraak** gebruikt de Web Speech API van de browser, met de taal die per lijst is ingesteld.
+
+## 6. Privacy en data
 
 - Geen analytics, geen advertenties. De lettertypes worden mee-gebundeld, dus er gaan geen verzoeken naar Google Fonts.
 - Gebruikers kunnen op de profielpagina hun data exporteren (JSON) en hun account verwijderen.
@@ -130,7 +148,7 @@ Let op: de uitnodigingslijst geldt ook voor Google-accounts.
   2. Voeg ze toe aan `EXPORT_TABLES` in `src/lib/exportData.ts`.
   3. Voeg een pgTAP-test toe.
 
-## 6. Design-systeem: "papier & inkt"
+## 7. Design-systeem: "papier & inkt"
 
 - Alle kleuren zijn CSS-variabelen in `src/styles/tokens.css`. Tailwind leest ze via `@theme` (`bg-surface`, `text-muted`, `bg-accent`, …).
 - Het thema (licht, donker of systeem) staat in `localStorage` en in `profiles.theme`. Een inline script in `index.html` zet het thema vóór de eerste paint, zodat er geen flits is.

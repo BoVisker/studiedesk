@@ -25,6 +25,104 @@ export type Database = {
         Update: { key?: string; value?: Json }
         Relationships: []
       }
+      list_items: {
+        Row: {
+          correct_count: number
+          created_at: string
+          definition: string
+          due_at: string | null
+          example: string | null
+          id: string
+          last_reviewed_at: string | null
+          list_id: string
+          note: string | null
+          position: number
+          srs_box: number
+          term: string
+          updated_at: string
+          user_id: string
+          word_type: string | null
+          wrong_count: number
+        }
+        Insert: {
+          correct_count?: number
+          created_at?: string
+          definition: string
+          due_at?: string | null
+          example?: string | null
+          id?: string
+          last_reviewed_at?: string | null
+          list_id: string
+          note?: string | null
+          position?: number
+          srs_box?: number
+          term: string
+          updated_at?: string
+          user_id?: string
+          word_type?: string | null
+          wrong_count?: number
+        }
+        Update: {
+          correct_count?: number
+          created_at?: string
+          definition?: string
+          due_at?: string | null
+          example?: string | null
+          id?: string
+          last_reviewed_at?: string | null
+          list_id?: string
+          note?: string | null
+          position?: number
+          srs_box?: number
+          term?: string
+          updated_at?: string
+          user_id?: string
+          word_type?: string | null
+          wrong_count?: number
+        }
+        Relationships: [
+          { foreignKeyName: 'list_items_list_id_fkey'; columns: ['list_id']; isOneToOne: false; referencedRelation: 'lists'; referencedColumns: ['id'] },
+        ]
+      }
+      lists: {
+        Row: {
+          chapter: string | null
+          created_at: string
+          definition_lang: string | null
+          id: string
+          kind: Database['public']['Enums']['list_kind']
+          subject: string
+          term_lang: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chapter?: string | null
+          created_at?: string
+          definition_lang?: string | null
+          id?: string
+          kind?: Database['public']['Enums']['list_kind']
+          subject: string
+          term_lang?: string | null
+          title: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          chapter?: string | null
+          created_at?: string
+          definition_lang?: string | null
+          id?: string
+          kind?: Database['public']['Enums']['list_kind']
+          subject?: string
+          term_lang?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_color: string
@@ -58,6 +156,42 @@ export type Database = {
         Update: { created_at?: string; email?: string; invited_by?: string | null; note?: string | null }
         Relationships: []
       }
+      study_sessions: {
+        Row: {
+          created_at: string
+          ended_at: string
+          grade: number | null
+          id: string
+          items_correct: number
+          items_total: number
+          list_id: string | null
+          mode: string
+          started_at: string
+          subject: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          ended_at: string
+          grade?: number | null
+          id?: string
+          items_correct?: number
+          items_total?: number
+          list_id?: string | null
+          mode: string
+          started_at: string
+          subject?: string | null
+          user_id?: string
+        }
+        Update: {
+          grade?: number | null
+          items_correct?: number
+          items_total?: number
+        }
+        Relationships: [
+          { foreignKeyName: 'study_sessions_list_id_fkey'; columns: ['list_id']; isOneToOne: false; referencedRelation: 'lists'; referencedColumns: ['id'] },
+        ]
+      }
       user_subjects: {
         Row: { blocks: Json; created_at: string; position: number; subject: string; updated_at: string; user_id: string }
         Insert: { blocks?: Json; created_at?: string; position?: number; subject: string; updated_at?: string; user_id?: string }
@@ -76,11 +210,11 @@ export type Database = {
       consume_ai_credit: { Args: never; Returns: number }
       is_admin: { Args: never; Returns: boolean }
     }
-    Enums: { theme_pref: 'light' | 'dark' | 'system' }
+    Enums: { list_kind: 'woorden' | 'begrippen' | 'formules'; theme_pref: 'light' | 'dark' | 'system' }
     CompositeTypes: { [_ in never]: never }
   }
 }
 
 export const Constants = {
-  public: { Enums: { theme_pref: ['light', 'dark', 'system'] } },
+  public: { Enums: { list_kind: ['woorden', 'begrippen', 'formules'], theme_pref: ['light', 'dark', 'system'] } },
 } as const

@@ -1,9 +1,10 @@
 import { Pencil, Play, RotateCcw } from 'lucide-react'
-import { useState } from 'react'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { Alert, Button, EmptyState, Skeleton } from '@/components/ui'
 import { archetypeLabels, isSubjectSlug, subjectsBySlug } from '@/config/subjects'
 import { accentProps } from '@/design/subjectPalette'
+import { fetchLists, type ListWithStats } from '@/features/lists/api'
 import { BlockCard } from './BlockCard'
 import { BlockEditor } from './BlockEditor'
 import { defaultBlocks, type BlockSetting } from './blockSettings'
@@ -16,6 +17,17 @@ export function SubjectPage() {
   const [draft, setDraft] = useState<BlockSetting[] | null>(null)
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState<{ tone: 'error' | 'success' | 'info'; text: string } | null>(null)
+  const [lists, setLists] = useState<ListWithStats[] | null>(null)
+  const [listsError, setListsError] = useState(false)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!isSubjectSlug(slug)) return
+    setLists(null)
+    fetchLists(slug)
+      .then(setLists)
+      .catch(() => setListsError(true))
+  }, [slug])
 
   if (!isSubjectSlug(slug)) return <Navigate to="/vakken" replace />
   const def = subjectsBySlug[slug]
@@ -32,6 +44,16 @@ export function SubjectPage() {
 
   const editing = draft !== null
   const visible = mine.blocks.filter((b) => b.enabled)
+
+  // "Begin met leren": eerst wat te herhalen is, anders de meest recente lijst,
+  // anders een nieuwe lijst maken.
+  function startLearning() {
+    const due = (lists ?? []).reduce((n, l) => n + l.due_count, 0)
+    if (due > 0) return navigate(`/herhalen?vak=${slug}`)
+    const recent = (lists ?? []).find((l) => l.item_count > 0)
+    if (recent) return navigate(`/lijsten/${recent.id}/leren?modus=flashcards`)
+    setMsg({ tone: 'info', text: 'Je hebt nog geen lijsten voor dit vak. Maak er eerst een via “Nieuwe lijst”.' })
+  }
 
   async function save() {
     setBusy(true)
@@ -56,7 +78,7 @@ export function SubjectPage() {
         </div>
         {!editing && (
           <div className="flex gap-2">
-            <Button variant="accent" onClick={() => setMsg({ tone: 'info', text: 'Leren met lijsten komt in de volgende versie (fase 3).' })}>
+            <Button variant="accent" onClick={startLearning}>
               <Play className="size-4" aria-hidden="true" /> Begin met leren
             </Button>
             <Button variant="outline" onClick={() => { setMsg(null); setDraft(mine.blocks) }}>
@@ -88,7 +110,7 @@ export function SubjectPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {visible.map((b) => (
-            <BlockCard key={b.id} block={b} />
+            <BlockCard key={b.id} block={b} ctx={{ slug: def.slug, lists, error: listsError }} />
           ))}
         </div>
       )}
