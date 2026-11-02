@@ -1,0 +1,71 @@
+@import 'tailwindcss';
+@import './tokens.css';
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-ink: var(--ink);
+  --color-on-ink: var(--on-ink);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --font-display: 'Fraunces Variable', Georgia, serif;
+  --font-sans: 'Instrument Sans Variable', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+  --shadow-paper: var(--shadow);
+}
+
+@layer base {
+  html {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    min-height: 100dvh;
+    background:
+      radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--line) 55%, transparent) 1px, transparent 0) 0 0 / 22px 22px,
+      var(--bg);
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    font-variation-settings: 'SOFT' 50, 'WONK' 0;
+    letter-spacing: -0.01em;
+  }
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--accent) 25%, transparent);
+  }
+}
+
+@layer utilities {
+  .rise-in {
+    animation: rise-in 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

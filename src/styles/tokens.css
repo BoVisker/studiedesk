@@ -1,0 +1,39 @@
+/* "Papier & inkt" — alle kleuren lopen via deze variabelen. */
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f6f1e7;          /* warm gebroken wit, papier */
+  --surface: #fffcf5;     /* kaart */
+  --surface-2: #efe8da;   /* verzonken vlak */
+  --line: #ddd3c1;        /* potloodlijn */
+  --text: #1a2747;        /* diepe inkt */
+  --muted: #5a6378;
+  --ink: #1a2747;
+  --on-ink: #f6f1e7;
+  --danger: #b3261e;
+  --success: #2a6b3c;
+  --warning: #8a5a00;
+  --focus: #2960e0;
+  --shadow: 0 1px 0 rgb(26 39 71 / 0.04), 0 8px 24px -12px rgb(26 39 71 / 0.18);
+  --accent: var(--accent-light, #1a2747);
+  --on-accent: #fffcf5;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0e1a2f;          /* diep nachtblauw, geen zwart */
+  --surface: #16243d;
+  --surface-2: #0b1526;
+  --line: #2a3a58;
+  --text: #eee7d8;        /* gebroken wit */
+  --muted: #a7afc2;
+  --ink: #eee7d8;
+  --on-ink: #0e1a2f;
+  --danger: #f28b82;
+  --success: #7fd19a;
+  --warning: #e8b45a;
+  --focus: #8fb0ff;
+  --shadow: 0 1px 0 rgb(0 0 0 / 0.2), 0 10px 30px -14px rgb(0 0 0 / 0.6);
+  --accent: var(--accent-dark, #eee7d8);
+  --on-accent: #0e1a2f;
+}
