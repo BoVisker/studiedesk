@@ -417,3 +417,6 @@ enabled = true
 # werkt niet met de nieuwe asymmetrische JWT-sleutels.
 [functions.delete-account]
 verify_jwt = false
+
+[functions.extract-list]
+verify_jwt = false

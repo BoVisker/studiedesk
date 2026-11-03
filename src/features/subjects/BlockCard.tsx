@@ -1,4 +1,4 @@
-import { CalendarClock, Clock, Plus, RotateCcw } from 'lucide-react'
+import { CalendarClock, Camera, Clock, Plus, RotateCcw } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { blockDefs, type BlockId } from '@/config/blocks'
 import { buttonClass, Card, Skeleton } from '@/components/ui'
@@ -52,7 +52,7 @@ function ListsBlock({ kind, ctx }: { kind: ListKind; ctx: BlockContext }) {
   return (
     <>
       {lists.length === 0 ? (
-        <p className="text-sm text-muted">Nog geen lijsten. Typ of plak er een, of (binnenkort) maak een foto.</p>
+        <p className="text-sm text-muted">Nog geen lijsten. Typ of plak er een, of maak een foto.</p>
       ) : (
         <ul className="-mx-2 flex flex-col">
           {lists.slice(0, 6).map((l) => (
@@ -73,9 +73,14 @@ function ListsBlock({ kind, ctx }: { kind: ListKind; ctx: BlockContext }) {
           ))}
         </ul>
       )}
-      <Link to={`/lijsten/nieuw?vak=${ctx.slug}&soort=${kind}`} className={buttonClass('outline', 'sm', 'mt-auto self-start')}>
-        <Plus className="size-4" aria-hidden="true" /> Nieuwe lijst
-      </Link>
+      <div className="mt-auto flex flex-wrap gap-2">
+        <Link to={`/lijsten/nieuw?vak=${ctx.slug}&soort=${kind}`} className={buttonClass('outline', 'sm')}>
+          <Plus className="size-4" aria-hidden="true" /> Nieuwe lijst
+        </Link>
+        <Link to={`/lijsten/foto?vak=${ctx.slug}&soort=${kind}`} className={buttonClass('outline', 'sm')}>
+          <Camera className="size-4" aria-hidden="true" /> Uit foto
+        </Link>
+      </div>
     </>
   )
 }

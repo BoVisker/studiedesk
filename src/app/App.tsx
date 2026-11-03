@@ -17,6 +17,7 @@ import { env } from '@/lib/env'
 const SubjectPage = lazy(() => import('@/features/subjects/SubjectPage').then((m) => ({ default: m.SubjectPage })))
 const InvitesPage = lazy(() => import('@/features/admin/InvitesPage').then((m) => ({ default: m.InvitesPage })))
 const ListEditorPage = lazy(() => import('@/features/lists/ListEditorPage').then((m) => ({ default: m.ListEditorPage })))
+const PhotoImportPage = lazy(() => import('@/features/imports/PhotoImportPage').then((m) => ({ default: m.PhotoImportPage })))
 const ListPage = lazy(() => import('@/features/lists/ListPage').then((m) => ({ default: m.ListPage })))
 const StudyPage = lazy(() => import('@/features/study/StudyPage').then((m) => ({ default: m.StudyPage })))
 const ProfilePage = lazy(() => import('@/features/profile/ProfilePage').then((m) => ({ default: m.ProfilePage })))
@@ -62,6 +63,7 @@ export function App() {
                 <Route path="vakken/kiezen" element={<SubjectPickerPage />} />
                 <Route path="vakken/:slug" element={<SubjectPage />} />
                 <Route path="lijsten/nieuw" element={<ListEditorPage />} />
+                <Route path="lijsten/foto" element={<PhotoImportPage />} />
                 <Route path="lijsten/:id" element={<ListPage />} />
                 <Route path="lijsten/:id/bewerken" element={<ListEditorPage />} />
                 <Route path="lijsten/:id/leren" element={<StudyPage />} />

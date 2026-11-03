@@ -3,7 +3,7 @@
 Leerdashboard voor VWO-leerlingen: per vak leren, toetsen plannen en cijfers bijhouden.
 Vite + React + TypeScript + Tailwind, gehost op GitHub Pages, met Supabase (Auth, Postgres, Storage, Edge Functions) als backend.
 
-> **Status:** fase 1 t/m 3 zijn klaar: project, auth, thema's, vakkeuze, template-systeem, lijsten en alle leervormen met spaced repetition.
+> **Status:** fase 1 t/m 4 zijn klaar: project, auth, thema's, vakkeuze, template-systeem, lijsten, leervormen met spaced repetition en foto naar woordenlijst.
 
 ## Architectuur in het kort
 
@@ -77,6 +77,7 @@ npm run test:db   # pgTAP: RLS, uitnodigingslijst, AI-limiet
    # vanaf fase 9:
    supabase secrets set YOUTUBE_API_KEY=...
    supabase functions deploy delete-account
+   supabase functions deploy extract-list
    ```
 7. Database-types opnieuw genereren na een migratie: `npm run db:types`.
 8. Zijn migraties via het dashboard of de MCP-koppeling toegepast in plaats van met `supabase db push`? Dan verschillen de versienummers. Kijk met `supabase migration list` en lijn ze eenmalig uit met `supabase migration repair --status applied <versie>`.
@@ -138,7 +139,23 @@ Let op: de uitnodigingslijst geldt ook voor Google-accounts.
 - **Sneltoetsen:** spatie draait om, 1/2 of ←/→ is fout/goed, 1–4 kiest bij meerkeuze, Enter gaat verder.
 - **Tekst-naar-spraak** gebruikt de Web Speech API van de browser, met de taal die per lijst is ingesteld.
 
-## 6. Privacy en data
+## 6. Foto naar lijst (AI)
+
+1. De browser verkleint foto's tot maximaal 2000 px (JPEG) en uploadt ze naar de privé-bucket `source-images` onder `<user_id>/tmp/`. Opslag-RLS staat alleen je eigen map toe.
+2. De Edge Function `extract-list`:
+   - controleert de login en de paden;
+   - verbruikt één AI-credit;
+   - stuurt de foto's naar Claude via de officiële SDK met **gestructureerde output** (`betaZodOutputFormat`). De JSON is dus schema-gevalideerd: per rij `term`, `betekenis`, `opmerking`, `woordsoort`, `voorbeeldzin` en `onzeker`.
+3. **Het controlescherm is verplicht.** Je ziet de foto naast een bewerkbare tabel, onzekere regels zijn oranje en je kunt kolommen omwisselen.
+4. Na het opslaan worden de foto's standaard verwijderd. Wie dat uitzet, bewaart ze bij de lijst onder `<user_id>/lists/<id>/`. Afgebroken imports in `tmp/` worden na 24 uur opgeruimd.
+
+**Model:** `AI_MODEL` (standaard `claude-sonnet-5-5`) staat in `supabase/functions/_shared/config.ts`. De server-side fallback (`fallbacks: "default"`) staat aan: als de veiligheidsfilters een verzoek onterecht weigeren, probeert de API het automatisch op een ander model.
+
+**Benodigde secrets** (via Dashboard → Edge Functions → Secrets of `supabase secrets set`):
+- `ANTHROPIC_API_KEY`
+- `ALLOWED_ORIGINS`, bijv. `https://bovisker.github.io,http://localhost:5173`
+
+## 7. Privacy en data
 
 - Geen analytics, geen advertenties. De lettertypes worden mee-gebundeld, dus er gaan geen verzoeken naar Google Fonts.
 - Gebruikers kunnen op de profielpagina hun data exporteren (JSON) en hun account verwijderen.
@@ -148,7 +165,7 @@ Let op: de uitnodigingslijst geldt ook voor Google-accounts.
   2. Voeg ze toe aan `EXPORT_TABLES` in `src/lib/exportData.ts`.
   3. Voeg een pgTAP-test toe.
 
-## 7. Design-systeem: "papier & inkt"
+## 8. Design-systeem: "papier & inkt"
 
 - Alle kleuren zijn CSS-variabelen in `src/styles/tokens.css`. Tailwind leest ze via `@theme` (`bg-surface`, `text-muted`, `bg-accent`, …).
 - Het thema (licht, donker of systeem) staat in `localStorage` en in `profiles.theme`. Een inline script in `index.html` zet het thema vóór de eerste paint, zodat er geen flits is.

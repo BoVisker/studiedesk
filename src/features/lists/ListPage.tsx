@@ -1,6 +1,8 @@
 import { BookOpenCheck, Keyboard, Layers, ListChecks, Pencil, RotateCcw, Trash2, Volume2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useAuth } from '@/app/AuthProvider'
+import { listPhotos, removeListPhotos } from '@/features/imports/photoStorage'
 import { Alert, Button, buttonClass, Card, Dialog, EmptyState, Skeleton } from '@/components/ui'
 import { subjectsBySlug } from '@/config/subjects'
 import { accentProps, type SubjectSlug } from '@/design/subjectPalette'
@@ -22,10 +24,14 @@ export function ListPage() {
   const [error, setError] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [photos, setPhotos] = useState<{ path: string; url: string }[]>([])
+  const { session } = useAuth()
+  const userId = session!.user.id
 
   useEffect(() => {
     fetchList(id).then(setData).catch(() => setError(true))
-  }, [id])
+    listPhotos(userId, id).then(setPhotos).catch(() => setPhotos([]))
+  }, [id, userId])
 
   if (error) return <Alert tone="error">Kon de lijst niet laden. Controleer je verbinding.</Alert>
   if (data === undefined) return <Skeleton className="h-64" />
@@ -43,6 +49,7 @@ export function ListPage() {
     setDeleting(true)
     try {
       await deleteList(list.id)
+      await removeListPhotos(userId, list.id).catch(() => {})
       navigate(`/vakken/${list.subject}`, { replace: true })
     } catch {
       setDeleting(false)
@@ -134,6 +141,21 @@ export function ListPage() {
         </>
       )}
 
+      {photos.length > 0 && (
+        <section className="mt-6" aria-labelledby="bronfotos">
+          <h2 id="bronfotos" className="mb-2 font-display text-lg font-semibold">Bronfoto's</h2>
+          <ul className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+            {photos.map((p, i) => (
+              <li key={p.path}>
+                <a href={p.url} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-xl border border-line">
+                  <img src={p.url} alt={`Bronfoto ${i + 1}`} className="aspect-[3/4] w-full object-cover" loading="lazy" />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <div className="mt-6 flex flex-wrap gap-2">
         <Link to={`/lijsten/${list.id}/bewerken`} className={buttonClass('outline')}>
           <Pencil className="size-4" aria-hidden="true" /> Bewerken
@@ -144,7 +166,7 @@ export function ListPage() {
       </div>
 
       <Dialog open={confirmDelete} onClose={() => setConfirmDelete(false)} title="Lijst verwijderen?">
-        <p className="text-sm text-muted">“{list.title}” en je voortgang ermee worden verwijderd. Dit kan niet ongedaan worden gemaakt.</p>
+        <p className="text-sm text-muted">“{list.title}”, je voortgang en eventuele bronfoto's worden verwijderd. Dit kan niet ongedaan worden gemaakt.</p>
         <div className="flex justify-end gap-2">
           <Button variant="ghost" onClick={() => setConfirmDelete(false)}>Annuleren</Button>
           <Button variant="danger" loading={deleting} onClick={remove}>Verwijderen</Button>
