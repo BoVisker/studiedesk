@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import { clearOfflineData } from '@/lib/offline/sync'
 import type { Database } from '@/types/database'
 import { useTheme } from './ThemeProvider'
 
@@ -87,6 +88,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return null
     },
     signOut: async () => {
+      // Eerst de offline-cache wissen (gedeeld apparaat), dan uitloggen.
+      await clearOfflineData()
       await supabase.auth.signOut()
     },
   }

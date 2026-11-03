@@ -1,7 +1,9 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { HashRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { AppShell } from '@/components/layout/AppShell'
 import { Spinner } from '@/components/ui'
+import { initSync } from '@/lib/offline/sync'
+import { PwaPrompt } from './PwaPrompt'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { NewPasswordPage } from '@/features/auth/NewPasswordPage'
 import { HomePage } from '@/features/home/HomePage'
@@ -41,6 +43,10 @@ function FullPageSpinner() {
 function RequireAuth() {
   const { session, loading, recovering } = useAuth()
   const location = useLocation()
+  // Offline-sync starten zodra er een sessie is (RLS geldt bij het ophalen).
+  useEffect(() => {
+    if (session) initSync()
+  }, [session])
   if (loading) return <FullPageSpinner />
   if (!session) return <Navigate to="/inloggen" replace state={{ from: location }} />
   if (recovering && location.pathname !== '/nieuw-wachtwoord') return <Navigate to="/nieuw-wachtwoord" replace />
@@ -88,6 +94,7 @@ export function App() {
             </Route>
           </Routes>
         </HashRouter>
+        <PwaPrompt />
       </AuthProvider>
     </ThemeProvider>
   )

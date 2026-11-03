@@ -4,8 +4,8 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '@/app/AuthProvider'
 import { cx, Spinner } from '@/components/ui'
 import { Avatar } from './Avatar'
+import { OfflineBar } from './OfflineBar'
 
-// De planner is nog een placeholder (fase 7).
 const nav = [
   { to: '/', label: 'Vandaag', Icon: Home, end: true },
   { to: '/vakken', label: 'Vakken', Icon: BookOpen },
@@ -22,6 +22,9 @@ export function AppShell() {
       <a href="#main" className="sr-only z-50 rounded-lg bg-ink px-3 py-2 text-on-ink focus:not-sr-only focus:fixed focus:left-3 focus:top-3">
         Naar inhoud
       </a>
+      <div className="md:col-span-2">
+        <OfflineBar />
+      </div>
 
       <aside className="hidden border-r border-line bg-surface/60 px-4 py-6 md:flex md:flex-col md:gap-8">
         <Wordmark />

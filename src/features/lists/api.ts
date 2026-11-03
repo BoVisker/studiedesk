@@ -2,6 +2,9 @@ import type { SubjectSlug } from '@/design/subjectPalette'
 import { supabase } from '@/lib/supabase'
 import type { Database } from '@/types/database'
 import { addDays, startOfDay, type SrsState } from '@/features/study/srs'
+import { cacheList, cachedDue, queueReview, queueSession, readCachedList } from '@/lib/offline/sync'
+
+const online = () => typeof navigator === 'undefined' || navigator.onLine
 
 export type ListKind = Database['public']['Enums']['list_kind']
 export type ListRow = Database['public']['Tables']['lists']['Row']
@@ -47,12 +50,21 @@ export async function fetchLists(subject?: SubjectSlug): Promise<ListWithStats[]
 }
 
 export async function fetchList(id: string): Promise<{ list: ListRow; items: ItemRow[] } | null> {
-  const [l, i] = await Promise.all([
-    supabase.from('lists').select('*').eq('id', id).maybeSingle(),
-    supabase.from('list_items').select('*').eq('list_id', id).order('position'),
-  ])
-  if (l.error || i.error) throw l.error ?? i.error
-  return l.data ? { list: l.data, items: i.data } : null
+  if (online()) {
+    try {
+      const [l, i] = await Promise.all([
+        supabase.from('lists').select('*').eq('id', id).maybeSingle(),
+        supabase.from('list_items').select('*').eq('list_id', id).order('position'),
+      ])
+      if (l.error || i.error) throw l.error ?? i.error
+      if (!l.data) return null
+      void cacheList(l.data, i.data)
+      return { list: l.data, items: i.data }
+    } catch {
+      // Geen verbinding of serverfout: val terug op de cache.
+    }
+  }
+  return readCachedList(id)
 }
 
 export type ListMeta = Pick<ListRow, 'subject' | 'title' | 'chapter' | 'kind' | 'term_lang' | 'definition_lang'>
@@ -106,25 +118,32 @@ export async function deleteList(id: string) {
 }
 
 export async function saveReview(itemId: string, state: SrsState) {
-  const { error } = await supabase.from('list_items').update(state).eq('id', itemId)
-  if (error) throw error
+  // Via de offline-wachtrij: offline wordt het bewaard en later gesynchroniseerd.
+  await queueReview(itemId, state)
 }
 
 export type DueItem = ItemRow & { lists: Pick<ListRow, 'subject' | 'title' | 'kind' | 'term_lang' | 'definition_lang'> }
 
 /** Alle items die vandaag (of eerder) aan de beurt zijn, optioneel per vak. */
 export async function fetchDue(subject?: SubjectSlug): Promise<DueItem[]> {
-  let q = supabase
-    .from('list_items')
-    .select('*, lists!inner(subject, title, kind, term_lang, definition_lang)')
-    .not('due_at', 'is', null)
-    .lt('due_at', tomorrow())
-    .order('due_at')
-    .limit(500)
-  if (subject) q = q.eq('lists.subject', subject)
-  const { data, error } = await q
-  if (error) throw error
-  return data as DueItem[]
+  if (online()) {
+    try {
+      let q = supabase
+        .from('list_items')
+        .select('*, lists!inner(subject, title, kind, term_lang, definition_lang)')
+        .not('due_at', 'is', null)
+        .lt('due_at', tomorrow())
+        .order('due_at')
+        .limit(500)
+      if (subject) q = q.eq('lists.subject', subject)
+      const { data, error } = await q
+      if (error) throw error
+      return data as DueItem[]
+    } catch {
+      // Offline of serverfout: val terug op de cache.
+    }
+  }
+  return cachedDue(subject ?? null)
 }
 
 export async function countDue(): Promise<number> {
@@ -138,6 +157,6 @@ export async function countDue(): Promise<number> {
 }
 
 export async function saveSession(row: Database['public']['Tables']['study_sessions']['Insert']) {
-  const { error } = await supabase.from('study_sessions').insert(row)
-  if (error) throw error
+  // Via de offline-wachtrij: offline wordt de sessie bewaard en later verstuurd.
+  await queueSession(row as Record<string, unknown>)
 }

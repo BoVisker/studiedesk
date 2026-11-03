@@ -31,7 +31,7 @@ export function PrivacyPage() {
         </section>
         <section>
           <h2>Waar het staat</h2>
-          <p>Je gegevens staan in een database van Supabase in de EU. Andere gebruikers kunnen jouw gegevens niet zien; dat wordt per rij in de database afgedwongen.</p>
+          <p>Je gegevens staan in een database van Supabase in de EU. Andere gebruikers kunnen jouw gegevens niet zien; dat wordt per rij in de database afgedwongen. Om offline te kunnen leren bewaren we een kopie van je lijsten op je eigen apparaat; bij uitloggen wissen we die weer.</p>
         </section>
         <section>
           <h2>Jouw rechten</h2>

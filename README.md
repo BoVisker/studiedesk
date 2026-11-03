@@ -3,7 +3,7 @@
 Leerdashboard voor VWO-leerlingen: per vak leren, toetsen plannen en cijfers bijhouden.
 Vite + React + TypeScript + Tailwind, gehost op GitHub Pages, met Supabase (Auth, Postgres, Storage, Edge Functions) als backend.
 
-> **Status:** fase 1 t/m 7 zijn klaar: project, auth, thema's, vakkeuze, template-systeem, lijsten, leervormen met spaced repetition, foto naar woordenlijst, foto naar samenvatting of uitwerking, cijfers met screenshot-import, en de toetsplanner. ICS-agenda-import volgt zodra er een voorbeeldfeed is.
+> **Status:** fase 1 t/m 8 zijn klaar: project, auth, thema's, vakkeuze, template-systeem, lijsten, leervormen met spaced repetition, foto naar woordenlijst, foto naar samenvatting of uitwerking, cijfers met screenshot-import, de toetsplanner, en offline leren (PWA). ICS-agenda-import volgt zodra er een voorbeeldfeed is.
 
 ## Architectuur in het kort
 
@@ -204,7 +204,25 @@ Let op: de uitnodigingslijst geldt ook voor Google-accounts.
 - **Opslag:** tabel `tests` (met `source`/`external_id` voor latere ICS-import) en `plan_checkoffs`, beide met RLS per gebruiker. Het maximum leermomenten per dag is een persoonlijke voorkeur in `localStorage`.
 - **ICS-agenda-import** (toetsen uit de agendalink van je school) staat klaar in de bron-architectuur (`icsCalendarSource`) maar is nog uit; die bouwen we zodra er een voorbeeld-`.ics` is om de herkenning op af te stemmen.
 
-## 10. Privacy en data
+## 10. Offline en installeren (PWA)
+
+StudieDesk is een installeerbare PWA: je kunt woordenlijsten ook zonder internet leren.
+
+- **Service worker** (via `vite-plugin-pwa`) cachet de app-shell, zodat de app offline opent. Bij een nieuwe versie zie je een melding "Vernieuwen" (`src/app/PwaPrompt.tsx`).
+- **Gegevens offline** (`src/lib/offline/`): lijsten en items worden in IndexedDB gecachet (`idb`). Online wordt alles opgehaald en bijgewerkt; offline lees je uit de cache, zodat leren en herhalen gewoon werkt.
+- **Sync-wachtrij (outbox):** herhalingen en leersessies worden eerst lokaal opgeslagen (optimistisch) en in een wachtrij gezet. Zodra er verbinding is, worden ze naar Supabase gestuurd (oudste eerst). Lukt een regel na `MAX_ATTEMPTS` pogingen niet, dan laten we hem vallen.
+- **Conflictstrategie: de laatste herhaling wint.** Elke herhaling draagt het tijdstip `last_reviewed_at` mee. Bij het synchroniseren past de server de herhaling alleen toe als het opgeslagen `last_reviewed_at` leeg is of niet nieuwer dan onze herhaling (PostgREST-filter `conflictFilter`). Leer je hetzelfde woord op twee apparaten, dan wint dus de meest recente herhaling. Leersessies zijn alleen-toevoegen en kennen geen conflict.
+- **Geen IndexedDB?** In de privémodus of een oudere browser valt alles netjes terug op direct online werken; de app breekt nooit.
+
+### iOS-beperkingen
+
+Op iPhone/iPad gelden extra beperkingen van Safari/iOS:
+
+- Offline werkt het betrouwbaarst als je de app **aan je beginscherm toevoegt** (Deel → Zet op beginscherm). In een gewone Safari-tab kan iOS de opslag eerder wissen.
+- iOS kan de offline-opslag (IndexedDB en caches) wissen na ongeveer **7 dagen** zonder gebruik van de geïnstalleerde app.
+- Er is **geen achtergrond-sync**: synchroniseren gebeurt wanneer je de app opent, niet vanzelf op de achtergrond.
+
+## 11. Privacy en data
 
 - Geen analytics, geen advertenties. De lettertypes worden mee-gebundeld, dus er gaan geen verzoeken naar Google Fonts.
 - Gebruikers kunnen op de profielpagina hun data exporteren (JSON) en hun account verwijderen.
@@ -214,7 +232,7 @@ Let op: de uitnodigingslijst geldt ook voor Google-accounts.
   2. Voeg ze toe aan `EXPORT_TABLES` in `src/lib/exportData.ts`.
   3. Voeg een pgTAP-test toe.
 
-## 11. Design-systeem: "papier & inkt"
+## 12. Design-systeem: "papier & inkt"
 
 - Alle kleuren zijn CSS-variabelen in `src/styles/tokens.css`. Tailwind leest ze via `@theme` (`bg-surface`, `text-muted`, `bg-accent`, …).
 - Het thema (licht, donker of systeem) staat in `localStorage` en in `profiles.theme`. Een inline script in `index.html` zet het thema vóór de eerste paint, zodat er geen flits is.
