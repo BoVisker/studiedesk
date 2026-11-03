@@ -3,7 +3,7 @@
 Leerdashboard voor VWO-leerlingen: per vak leren, toetsen plannen en cijfers bijhouden.
 Vite + React + TypeScript + Tailwind, gehost op GitHub Pages, met Supabase (Auth, Postgres, Storage, Edge Functions) als backend.
 
-> **Status:** fase 1 t/m 6 zijn klaar: project, auth, thema's, vakkeuze, template-systeem, lijsten, leervormen met spaced repetition, foto naar woordenlijst, foto naar samenvatting of uitwerking, en cijfers met screenshot-import.
+> **Status:** fase 1 t/m 7 zijn klaar: project, auth, thema's, vakkeuze, template-systeem, lijsten, leervormen met spaced repetition, foto naar woordenlijst, foto naar samenvatting of uitwerking, cijfers met screenshot-import, en de toetsplanner. ICS-agenda-import volgt zodra er een voorbeeldfeed is.
 
 ## Architectuur in het kort
 
@@ -192,7 +192,19 @@ Let op: de uitnodigingslijst geldt ook voor Google-accounts.
   - `magister` is een lege stub die ook met `VITE_FEATURE_MAGISTER=true` uit blijft. Zie [docs/magister-later.md](docs/magister-later.md).
   - `tests/sources.test.ts` bewaakt dat er geen Magister-netwerk-, inlog- of tokencode bestaat.
 
-## 9. Privacy en data
+## 9. Toetsplanner
+
+- **Route:** `/planner`. Je voert toetsen in (vak, omschrijving, datum, hoeveel leermomenten). Het leerplan wordt in de app berekend, zonder AI.
+- **Algoritme** (`src/features/planner/planner.ts`), uitlegbaar in drie regels:
+  1. Per toets plannen we `effort` leermomenten in de dagen vóór de toets.
+  2. Die verdelen we gelijkmatig, met altijd één moment op de dag vóór de toets.
+  3. Is een dag te vol (meer dan het ingestelde maximum), dan schuift een moment naar een rustigere dag binnen hetzelfde venster; lukt dat niet, dan heet het een "drukke dag".
+- **Vandaag:** de leermomenten van vandaag plus je te herhalen woorden/begrippen (spaced repetition), elk af te vinken.
+- **Herplannen gebeurt vanzelf:** het plan wordt elke keer opnieuw berekend uit je huidige toetsen en de datum van vandaag. Afgevinkte momenten blijven staan (bewaard op toets + datum in `plan_checkoffs`).
+- **Opslag:** tabel `tests` (met `source`/`external_id` voor latere ICS-import) en `plan_checkoffs`, beide met RLS per gebruiker. Het maximum leermomenten per dag is een persoonlijke voorkeur in `localStorage`.
+- **ICS-agenda-import** (toetsen uit de agendalink van je school) staat klaar in de bron-architectuur (`icsCalendarSource`) maar is nog uit; die bouwen we zodra er een voorbeeld-`.ics` is om de herkenning op af te stemmen.
+
+## 10. Privacy en data
 
 - Geen analytics, geen advertenties. De lettertypes worden mee-gebundeld, dus er gaan geen verzoeken naar Google Fonts.
 - Gebruikers kunnen op de profielpagina hun data exporteren (JSON) en hun account verwijderen.
@@ -202,7 +214,7 @@ Let op: de uitnodigingslijst geldt ook voor Google-accounts.
   2. Voeg ze toe aan `EXPORT_TABLES` in `src/lib/exportData.ts`.
   3. Voeg een pgTAP-test toe.
 
-## 10. Design-systeem: "papier & inkt"
+## 11. Design-systeem: "papier & inkt"
 
 - Alle kleuren zijn CSS-variabelen in `src/styles/tokens.css`. Tailwind leest ze via `@theme` (`bg-surface`, `text-muted`, `bg-accent`, …).
 - Het thema (licht, donker of systeem) staat in `localStorage` en in `profiles.theme`. Een inline script in `index.html` zet het thema vóór de eerste paint, zodat er geen flits is.

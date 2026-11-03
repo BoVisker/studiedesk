@@ -207,6 +207,30 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_checkoffs: {
+        Row: {
+          created_at: string
+          done_on: string
+          id: string
+          item_key: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          done_on?: string
+          id?: string
+          item_key: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          done_on?: string
+          id?: string
+          item_key?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_color: string
@@ -275,6 +299,45 @@ export type Database = {
         Relationships: [
           { foreignKeyName: 'study_sessions_list_id_fkey'; columns: ['list_id']; isOneToOne: false; referencedRelation: 'lists'; referencedColumns: ['id'] },
         ]
+      }
+      tests: {
+        Row: {
+          created_at: string
+          effort: number
+          external_id: string | null
+          id: string
+          source: string
+          subject: string
+          test_date: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          effort?: number
+          external_id?: string | null
+          id?: string
+          source?: string
+          subject: string
+          test_date: string
+          title: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          effort?: number
+          external_id?: string | null
+          id?: string
+          source?: string
+          subject?: string
+          test_date?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_subjects: {
         Row: { blocks: Json; created_at: string; position: number; subject: string; updated_at: string; user_id: string }

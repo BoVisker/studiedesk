@@ -22,6 +22,7 @@ const ListPage = lazy(() => import('@/features/lists/ListPage').then((m) => ({ d
 const StudyPage = lazy(() => import('@/features/study/StudyPage').then((m) => ({ default: m.StudyPage })))
 const NotePhotoPage = lazy(() => import('@/features/notes/NotePhotoPage').then((m) => ({ default: m.NotePhotoPage })))
 const NotePage = lazy(() => import('@/features/notes/NotePage').then((m) => ({ default: m.NotePage })))
+const PlannerPage = lazy(() => import('@/features/planner/PlannerPage').then((m) => ({ default: m.PlannerPage })))
 const GradesPage = lazy(() => import('@/features/grades/GradesPage').then((m) => ({ default: m.GradesPage })))
 const SubjectGradesPage = lazy(() => import('@/features/grades/SubjectGradesPage').then((m) => ({ default: m.SubjectGradesPage })))
 const GradeImportPage = lazy(() => import('@/features/grades/GradeImportPage').then((m) => ({ default: m.GradeImportPage })))
@@ -76,7 +77,7 @@ export function App() {
                 <Route path="notities/foto" element={<NotePhotoPage />} />
                 <Route path="notities/:id" element={<NotePage />} />
                 <Route path="beheer" element={<InvitesPage />} />
-                <Route path="planner" element={<PlaceholderPage title="Planner" text="De toetsplanner komt in een volgende versie." />} />
+                <Route path="planner" element={<PlannerPage />} />
                 <Route path="cijfers" element={<GradesPage />} />
                 <Route path="cijfers/importeren" element={<GradeImportPage />} />
                 <Route path="cijfers/:slug" element={<SubjectGradesPage />} />
