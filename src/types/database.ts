@@ -123,6 +123,45 @@ export type Database = {
         }
         Relationships: []
       }
+      notes: {
+        Row: {
+          chapter: string | null
+          content: Json
+          created_at: string
+          id: string
+          kind: Database['public']['Enums']['note_kind']
+          length: string | null
+          subject: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chapter?: string | null
+          content: Json
+          created_at?: string
+          id?: string
+          kind: Database['public']['Enums']['note_kind']
+          length?: string | null
+          subject: string
+          title: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          chapter?: string | null
+          content?: Json
+          created_at?: string
+          id?: string
+          kind?: Database['public']['Enums']['note_kind']
+          length?: string | null
+          subject?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_color: string
@@ -210,11 +249,11 @@ export type Database = {
       consume_ai_credit: { Args: never; Returns: number }
       is_admin: { Args: never; Returns: boolean }
     }
-    Enums: { list_kind: 'woorden' | 'begrippen' | 'formules'; theme_pref: 'light' | 'dark' | 'system' }
+    Enums: { list_kind: 'woorden' | 'begrippen' | 'formules'; note_kind: 'samenvatting' | 'uitwerking'; theme_pref: 'light' | 'dark' | 'system' }
     CompositeTypes: { [_ in never]: never }
   }
 }
 
 export const Constants = {
-  public: { Enums: { list_kind: ['woorden', 'begrippen', 'formules'], theme_pref: ['light', 'dark', 'system'] } },
+  public: { Enums: { list_kind: ['woorden', 'begrippen', 'formules'], note_kind: ['samenvatting', 'uitwerking'], theme_pref: ['light', 'dark', 'system'] } },
 } as const

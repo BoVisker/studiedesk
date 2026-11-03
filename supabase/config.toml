@@ -420,3 +420,6 @@ verify_jwt = false
 
 [functions.extract-list]
 verify_jwt = false
+
+[functions.explain-photo]
+verify_jwt = false

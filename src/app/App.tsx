@@ -20,6 +20,8 @@ const ListEditorPage = lazy(() => import('@/features/lists/ListEditorPage').then
 const PhotoImportPage = lazy(() => import('@/features/imports/PhotoImportPage').then((m) => ({ default: m.PhotoImportPage })))
 const ListPage = lazy(() => import('@/features/lists/ListPage').then((m) => ({ default: m.ListPage })))
 const StudyPage = lazy(() => import('@/features/study/StudyPage').then((m) => ({ default: m.StudyPage })))
+const NotePhotoPage = lazy(() => import('@/features/notes/NotePhotoPage').then((m) => ({ default: m.NotePhotoPage })))
+const NotePage = lazy(() => import('@/features/notes/NotePage').then((m) => ({ default: m.NotePage })))
 const ProfilePage = lazy(() => import('@/features/profile/ProfilePage').then((m) => ({ default: m.ProfilePage })))
 import { AuthProvider, useAuth } from './AuthProvider'
 import { ThemeProvider } from './ThemeProvider'
@@ -68,6 +70,8 @@ export function App() {
                 <Route path="lijsten/:id/bewerken" element={<ListEditorPage />} />
                 <Route path="lijsten/:id/leren" element={<StudyPage />} />
                 <Route path="herhalen" element={<StudyPage />} />
+                <Route path="notities/foto" element={<NotePhotoPage />} />
+                <Route path="notities/:id" element={<NotePage />} />
                 <Route path="beheer" element={<InvitesPage />} />
                 <Route path="planner" element={<PlaceholderPage title="Planner" text="De toetsplanner komt in een volgende versie." />} />
                 <Route path="cijfers" element={<PlaceholderPage title="Cijfers" text="De cijfermodule komt in een volgende versie." />} />

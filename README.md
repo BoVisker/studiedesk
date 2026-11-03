@@ -3,7 +3,7 @@
 Leerdashboard voor VWO-leerlingen: per vak leren, toetsen plannen en cijfers bijhouden.
 Vite + React + TypeScript + Tailwind, gehost op GitHub Pages, met Supabase (Auth, Postgres, Storage, Edge Functions) als backend.
 
-> **Status:** fase 1 t/m 4 zijn klaar: project, auth, thema's, vakkeuze, template-systeem, lijsten, leervormen met spaced repetition en foto naar woordenlijst.
+> **Status:** fase 1 t/m 5 zijn klaar: project, auth, thema's, vakkeuze, template-systeem, lijsten, leervormen met spaced repetition, foto naar woordenlijst en foto naar samenvatting of uitwerking.
 
 ## Architectuur in het kort
 
@@ -78,6 +78,7 @@ npm run test:db   # pgTAP: RLS, uitnodigingslijst, AI-limiet
    supabase secrets set YOUTUBE_API_KEY=...
    supabase functions deploy delete-account
    supabase functions deploy extract-list
+   supabase functions deploy explain-photo
    ```
 7. Database-types opnieuw genereren na een migratie: `npm run db:types`.
 8. Zijn migraties via het dashboard of de MCP-koppeling toegepast in plaats van met `supabase db push`? Dan verschillen de versienummers. Kijk met `supabase migration list` en lijn ze eenmalig uit met `supabase migration repair --status applied <versie>`.
@@ -155,7 +156,22 @@ Let op: de uitnodigingslijst geldt ook voor Google-accounts.
 - `ANTHROPIC_API_KEY`
 - `ALLOWED_ORIGINS`, bijv. `https://bovisker.github.io,http://localhost:5173`
 
-## 7. Privacy en data
+## 7. Foto naar samenvatting of uitwerking (AI)
+
+- **Route:** `/notities/foto`. Op de vakpagina staan de blokken **Samenvattingen** (natuur- en maatschappijvakken) en **Opgaven-logboek** (wiskunde).
+- **Edge Function `explain-photo`:** hetzelfde patroon als `extract-list` (login, padcontrole, één AI-credit, gestructureerde output), met twee modi:
+  - `samenvatting`: lengte kort, normaal of uitgebreid. Levert secties met kernpunten, kernbegrippen, formules en oefenvragen.
+  - `uitwerking`: per opgave de stappen met uitleg en berekening, het antwoord en een manier om het zelf te controleren.
+- **Wiskunde** staat in de tekst tussen `\( … \)` of `\[ … \]` en wordt met KaTeX gezet (`MathText.tsx`). Dollartekens tellen bewust niet als scheidingsteken, zodat bedragen bij economie gewoon tekst blijven. KaTeX escapet alle invoer en wordt alleen geladen op de pagina's die het nodig hebben.
+- **Uitwerkingen** tonen altijd een waarschuwing dat de leerling ze zelf moet controleren. Onzekere opgaven krijgen een extra melding.
+- **Oefenvragen** worden direct gecontroleerd en kosten geen extra AI-call:
+  - meerkeuze: meteen goed of fout;
+  - kort: met de regels van `answerCheck.ts`, varianten gescheiden door ` / ` (niet op komma's, vanwege decimalen);
+  - open: eerst het modelantwoord tonen, dan zelf beoordelen.
+- **Kernbegrippen** worden met één knop een begrippenlijst, die je met alle leervormen kunt leren.
+- **Opslag:** tabel `notes`, met de inhoud als JSON en RLS per gebruiker. De foto's worden na het bewaren verwijderd; bij weggooien direct.
+
+## 8. Privacy en data
 
 - Geen analytics, geen advertenties. De lettertypes worden mee-gebundeld, dus er gaan geen verzoeken naar Google Fonts.
 - Gebruikers kunnen op de profielpagina hun data exporteren (JSON) en hun account verwijderen.
@@ -165,7 +181,7 @@ Let op: de uitnodigingslijst geldt ook voor Google-accounts.
   2. Voeg ze toe aan `EXPORT_TABLES` in `src/lib/exportData.ts`.
   3. Voeg een pgTAP-test toe.
 
-## 8. Design-systeem: "papier & inkt"
+## 9. Design-systeem: "papier & inkt"
 
 - Alle kleuren zijn CSS-variabelen in `src/styles/tokens.css`. Tailwind leest ze via `@theme` (`bg-surface`, `text-muted`, `bg-accent`, …).
 - Het thema (licht, donker of systeem) staat in `localStorage` en in `profiles.theme`. Een inline script in `index.html` zet het thema vóór de eerste paint, zodat er geen flits is.

@@ -4,10 +4,12 @@ import { blockDefs, type BlockId } from '@/config/blocks'
 import { buttonClass, Card, Skeleton } from '@/components/ui'
 import type { SubjectSlug } from '@/design/subjectPalette'
 import type { ListKind, ListWithStats } from '@/features/lists/api'
+import type { NoteListItem } from '@/features/notes/api'
+import type { NoteKind } from '@/features/notes/types'
 import type { BlockSetting } from './blockSettings'
 
 /** Gedeelde data voor alle blokken op een vakpagina (één keer geladen). */
-export type BlockContext = { slug: SubjectSlug; lists: ListWithStats[] | null; error: boolean }
+export type BlockContext = { slug: SubjectSlug; lists: ListWithStats[] | null; notes: NoteListItem[] | null; error: boolean }
 
 const listBlocks: Partial<Record<BlockId, ListKind>> = {
   woordenlijsten: 'woorden',
@@ -15,10 +17,16 @@ const listBlocks: Partial<Record<BlockId, ListKind>> = {
   'formules-eenheden': 'formules',
 }
 
+const noteBlocks: Partial<Record<BlockId, NoteKind>> = {
+  samenvattingen: 'samenvatting',
+  'opgaven-logboek': 'uitwerking',
+}
+
 export function BlockCard({ block, ctx }: { block: BlockSetting; ctx: BlockContext }) {
   const def = blockDefs[block.id]
   const title = block.title || def.title
   const kind = listBlocks[block.id]
+  const noteKind = noteBlocks[block.id]
 
   return (
     <Card className="rise-in flex h-full flex-col gap-3 border-t-4 border-t-accent">
@@ -34,10 +42,12 @@ export function BlockCard({ block, ctx }: { block: BlockSetting; ctx: BlockConte
         <p className="text-sm text-muted">{def.description}</p>
       ) : ctx.error ? (
         <p className="text-sm text-danger">Kon de gegevens niet laden.</p>
-      ) : !ctx.lists ? (
+      ) : !ctx.lists || !ctx.notes ? (
         <Skeleton className="h-16" />
       ) : kind ? (
         <ListsBlock kind={kind} ctx={ctx} />
+      ) : noteKind ? (
+        <NotesBlock kind={noteKind} ctx={ctx} />
       ) : block.id === 'vandaag-herhalen' ? (
         <DueBlock ctx={ctx} />
       ) : block.id === 'voortgang' ? (
@@ -81,6 +91,40 @@ function ListsBlock({ kind, ctx }: { kind: ListKind; ctx: BlockContext }) {
           <Camera className="size-4" aria-hidden="true" /> Uit foto
         </Link>
       </div>
+    </>
+  )
+}
+
+function NotesBlock({ kind, ctx }: { kind: NoteKind; ctx: BlockContext }) {
+  const notes = ctx.notes!.filter((n) => n.kind === kind)
+  return (
+    <>
+      {notes.length === 0 ? (
+        <p className="text-sm text-muted">
+          {kind === 'samenvatting'
+            ? 'Nog geen samenvattingen. Maak een foto van een paragraaf voor een samenvatting met oefenvragen.'
+            : 'Nog geen uitwerkingen. Maak een foto van een opgave voor een uitleg stap voor stap.'}
+        </p>
+      ) : (
+        <ul className="-mx-2 flex flex-col">
+          {notes.slice(0, 6).map((n) => (
+            <li key={n.id}>
+              <Link to={`/notities/${n.id}`} className="flex items-center gap-2 rounded-lg px-2 py-2 hover:bg-surface-2">
+                <span className="min-w-0 flex-1 truncate">
+                  {n.title}
+                  {n.chapter && <span className="text-muted"> · {n.chapter}</span>}
+                </span>
+                <time dateTime={n.created_at} className="text-xs tabular-nums text-muted">
+                  {new Date(n.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}
+                </time>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+      <Link to={`/notities/foto?vak=${ctx.slug}&soort=${kind}`} className={buttonClass('outline', 'sm', 'mt-auto self-start')}>
+        <Camera className="size-4" aria-hidden="true" /> {kind === 'samenvatting' ? 'Samenvatten uit foto' : 'Opgave uit foto'}
+      </Link>
     </>
   )
 }

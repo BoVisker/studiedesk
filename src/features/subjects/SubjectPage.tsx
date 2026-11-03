@@ -5,6 +5,7 @@ import { Alert, Button, EmptyState, Skeleton } from '@/components/ui'
 import { archetypeLabels, isSubjectSlug, subjectsBySlug } from '@/config/subjects'
 import { accentProps } from '@/design/subjectPalette'
 import { fetchLists, type ListWithStats } from '@/features/lists/api'
+import { fetchNotes, type NoteListItem } from '@/features/notes/api'
 import { BlockCard } from './BlockCard'
 import { BlockEditor } from './BlockEditor'
 import { defaultBlocks, type BlockSetting } from './blockSettings'
@@ -19,13 +20,19 @@ export function SubjectPage() {
   const [msg, setMsg] = useState<{ tone: 'error' | 'success' | 'info'; text: string } | null>(null)
   const [lists, setLists] = useState<ListWithStats[] | null>(null)
   const [listsError, setListsError] = useState(false)
+  const [notes, setNotes] = useState<NoteListItem[] | null>(null)
   const navigate = useNavigate()
 
   useEffect(() => {
     if (!isSubjectSlug(slug)) return
     setLists(null)
-    fetchLists(slug)
-      .then(setLists)
+    setNotes(null)
+    setListsError(false)
+    Promise.all([fetchLists(slug), fetchNotes(slug)])
+      .then(([l, n]) => {
+        setLists(l)
+        setNotes(n)
+      })
       .catch(() => setListsError(true))
   }, [slug])
 
@@ -110,7 +117,7 @@ export function SubjectPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {visible.map((b) => (
-            <BlockCard key={b.id} block={b} ctx={{ slug: def.slug, lists, error: listsError }} />
+            <BlockCard key={b.id} block={b} ctx={{ slug: def.slug, lists, notes, error: listsError }} />
           ))}
         </div>
       )}
