@@ -25,6 +25,51 @@ export type Database = {
         Update: { key?: string; value?: Json }
         Relationships: []
       }
+      grades: {
+        Row: {
+          counts: boolean
+          created_at: string
+          description: string
+          external_id: string | null
+          grade: number
+          graded_on: string | null
+          id: string
+          source: string
+          subject: string
+          updated_at: string
+          user_id: string
+          weight: number
+        }
+        Insert: {
+          counts?: boolean
+          created_at?: string
+          description: string
+          external_id?: string | null
+          grade: number
+          graded_on?: string | null
+          id?: string
+          source?: string
+          subject: string
+          updated_at?: string
+          user_id?: string
+          weight?: number
+        }
+        Update: {
+          counts?: boolean
+          created_at?: string
+          description?: string
+          external_id?: string | null
+          grade?: number
+          graded_on?: string | null
+          id?: string
+          source?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
+          weight?: number
+        }
+        Relationships: []
+      }
       list_items: {
         Row: {
           correct_count: number

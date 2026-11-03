@@ -5,11 +5,14 @@ import { buttonClass, Card, Skeleton } from '@/components/ui'
 import type { SubjectSlug } from '@/design/subjectPalette'
 import type { ListKind, ListWithStats } from '@/features/lists/api'
 import type { NoteListItem } from '@/features/notes/api'
+import type { Grade } from '@/features/grades/api'
+import { schoolYear, weightedAverage } from '@/features/grades/calc'
+import { GradeValue, inYear } from '@/features/grades/GradeBits'
 import type { NoteKind } from '@/features/notes/types'
 import type { BlockSetting } from './blockSettings'
 
 /** Gedeelde data voor alle blokken op een vakpagina (één keer geladen). */
-export type BlockContext = { slug: SubjectSlug; lists: ListWithStats[] | null; notes: NoteListItem[] | null; error: boolean }
+export type BlockContext = { slug: SubjectSlug; lists: ListWithStats[] | null; notes: NoteListItem[] | null; grades: Grade[] | null; error: boolean }
 
 const listBlocks: Partial<Record<BlockId, ListKind>> = {
   woordenlijsten: 'woorden',
@@ -42,7 +45,7 @@ export function BlockCard({ block, ctx }: { block: BlockSetting; ctx: BlockConte
         <p className="text-sm text-muted">{def.description}</p>
       ) : ctx.error ? (
         <p className="text-sm text-danger">Kon de gegevens niet laden.</p>
-      ) : !ctx.lists || !ctx.notes ? (
+      ) : !ctx.lists || !ctx.notes || !ctx.grades ? (
         <Skeleton className="h-16" />
       ) : kind ? (
         <ListsBlock kind={kind} ctx={ctx} />
@@ -50,6 +53,8 @@ export function BlockCard({ block, ctx }: { block: BlockSetting; ctx: BlockConte
         <NotesBlock kind={noteKind} ctx={ctx} />
       ) : block.id === 'vandaag-herhalen' ? (
         <DueBlock ctx={ctx} />
+      ) : block.id === 'cijfers' ? (
+        <GradesBlock ctx={ctx} />
       ) : block.id === 'voortgang' ? (
         <ProgressBlock ctx={ctx} />
       ) : null}
@@ -124,6 +129,36 @@ function NotesBlock({ kind, ctx }: { kind: NoteKind; ctx: BlockContext }) {
       )}
       <Link to={`/notities/foto?vak=${ctx.slug}&soort=${kind}`} className={buttonClass('outline', 'sm', 'mt-auto self-start')}>
         <Camera className="size-4" aria-hidden="true" /> {kind === 'samenvatting' ? 'Samenvatten uit foto' : 'Opgave uit foto'}
+      </Link>
+    </>
+  )
+}
+
+function GradesBlock({ ctx }: { ctx: BlockContext }) {
+  const year = schoolYear(new Date())
+  const gs = ctx.grades!.filter((g) => inYear(g, year))
+  const last = [...gs].sort((a, b) => (b.graded_on ?? '').localeCompare(a.graded_on ?? '')).slice(0, 3)
+  return (
+    <>
+      {gs.length === 0 ? (
+        <p className="text-sm text-muted">Nog geen cijfers dit schooljaar.</p>
+      ) : (
+        <div className="flex items-end justify-between gap-3">
+          <div>
+            <GradeValue value={weightedAverage(gs)} decimals={2} className="font-display text-3xl font-semibold" />
+            <p className="text-sm text-muted">gemiddelde uit {gs.length} {gs.length === 1 ? 'cijfer' : 'cijfers'}</p>
+          </div>
+          <ul className="flex gap-2" aria-label="Laatste cijfers">
+            {last.map((g) => (
+              <li key={g.id} className="rounded-lg bg-surface-2 px-2 py-1 text-sm font-semibold" title={g.description}>
+                <GradeValue value={g.grade} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <Link to={`/cijfers/${ctx.slug}`} className={buttonClass('outline', 'sm', 'mt-auto self-start')}>
+        Alle cijfers
       </Link>
     </>
   )

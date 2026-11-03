@@ -6,6 +6,7 @@ import { archetypeLabels, isSubjectSlug, subjectsBySlug } from '@/config/subject
 import { accentProps } from '@/design/subjectPalette'
 import { fetchLists, type ListWithStats } from '@/features/lists/api'
 import { fetchNotes, type NoteListItem } from '@/features/notes/api'
+import { fetchGrades, type Grade } from '@/features/grades/api'
 import { BlockCard } from './BlockCard'
 import { BlockEditor } from './BlockEditor'
 import { defaultBlocks, type BlockSetting } from './blockSettings'
@@ -21,17 +22,20 @@ export function SubjectPage() {
   const [lists, setLists] = useState<ListWithStats[] | null>(null)
   const [listsError, setListsError] = useState(false)
   const [notes, setNotes] = useState<NoteListItem[] | null>(null)
+  const [grades, setGrades] = useState<Grade[] | null>(null)
   const navigate = useNavigate()
 
   useEffect(() => {
     if (!isSubjectSlug(slug)) return
     setLists(null)
     setNotes(null)
+    setGrades(null)
     setListsError(false)
-    Promise.all([fetchLists(slug), fetchNotes(slug)])
-      .then(([l, n]) => {
+    Promise.all([fetchLists(slug), fetchNotes(slug), fetchGrades(slug)])
+      .then(([l, n, g]) => {
         setLists(l)
         setNotes(n)
+        setGrades(g)
       })
       .catch(() => setListsError(true))
   }, [slug])
@@ -117,7 +121,7 @@ export function SubjectPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {visible.map((b) => (
-            <BlockCard key={b.id} block={b} ctx={{ slug: def.slug, lists, notes, error: listsError }} />
+            <BlockCard key={b.id} block={b} ctx={{ slug: def.slug, lists, notes, grades, error: listsError }} />
           ))}
         </div>
       )}

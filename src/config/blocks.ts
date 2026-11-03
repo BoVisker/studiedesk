@@ -3,7 +3,7 @@
 export const blockDefs = {
   'volgende-toets': { title: 'Volgende toets', description: 'Aftelling naar je eerstvolgende toets voor dit vak.', available: 'later' },
   voortgang: { title: 'Voortgang', description: 'Hoeveel je al beheerst en wat er nog openstaat.', available: 'now' },
-  cijfers: { title: 'Cijfers', description: 'Je cijfers en gemiddelde voor dit vak.', available: 'later' },
+  cijfers: { title: 'Cijfers', description: 'Je cijfers en gemiddelde voor dit vak.', available: 'now' },
   'vandaag-herhalen': { title: 'Vandaag te herhalen', description: 'Woorden en begrippen die vandaag aan de beurt zijn.', available: 'now' },
   woordenlijsten: { title: 'Woordenlijsten', description: 'Leer woorden met flashcards, typen en overhoren.', available: 'now' },
   grammatica: { title: 'Grammatica', description: 'Je eigen grammatica-notities en regels.', available: 'later' },

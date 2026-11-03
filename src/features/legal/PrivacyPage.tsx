@@ -27,7 +27,7 @@ export function PrivacyPage() {
         </section>
         <section>
           <h2>AI-functies</h2>
-          <p>Als je een foto laat verwerken of een samenvatting maakt, sturen we die foto of tekst naar een AI-dienst (Anthropic) om het resultaat te maken. Dat gebeurt alleen als jij op de knop drukt.</p>
+          <p>Als je een foto laat verwerken, een samenvatting maakt of een screenshot van je cijfers importeert, sturen we die afbeelding naar een AI-dienst (Anthropic) om het resultaat te maken. Dat gebeurt alleen als jij op de knop drukt.</p>
         </section>
         <section>
           <h2>Waar het staat</h2>

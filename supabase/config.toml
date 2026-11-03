@@ -423,3 +423,6 @@ verify_jwt = false
 
 [functions.explain-photo]
 verify_jwt = false
+
+[functions.extract-grades]
+verify_jwt = false

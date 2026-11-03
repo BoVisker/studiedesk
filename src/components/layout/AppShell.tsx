@@ -5,7 +5,7 @@ import { useAuth } from '@/app/AuthProvider'
 import { cx, Spinner } from '@/components/ui'
 import { Avatar } from './Avatar'
 
-// Planner en cijfers zijn nog placeholders (fase 6, 7).
+// De planner is nog een placeholder (fase 7).
 const nav = [
   { to: '/', label: 'Vandaag', Icon: Home, end: true },
   { to: '/vakken', label: 'Vakken', Icon: BookOpen },

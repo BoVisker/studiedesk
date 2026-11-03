@@ -22,6 +22,9 @@ const ListPage = lazy(() => import('@/features/lists/ListPage').then((m) => ({ d
 const StudyPage = lazy(() => import('@/features/study/StudyPage').then((m) => ({ default: m.StudyPage })))
 const NotePhotoPage = lazy(() => import('@/features/notes/NotePhotoPage').then((m) => ({ default: m.NotePhotoPage })))
 const NotePage = lazy(() => import('@/features/notes/NotePage').then((m) => ({ default: m.NotePage })))
+const GradesPage = lazy(() => import('@/features/grades/GradesPage').then((m) => ({ default: m.GradesPage })))
+const SubjectGradesPage = lazy(() => import('@/features/grades/SubjectGradesPage').then((m) => ({ default: m.SubjectGradesPage })))
+const GradeImportPage = lazy(() => import('@/features/grades/GradeImportPage').then((m) => ({ default: m.GradeImportPage })))
 const ProfilePage = lazy(() => import('@/features/profile/ProfilePage').then((m) => ({ default: m.ProfilePage })))
 import { AuthProvider, useAuth } from './AuthProvider'
 import { ThemeProvider } from './ThemeProvider'
@@ -74,7 +77,9 @@ export function App() {
                 <Route path="notities/:id" element={<NotePage />} />
                 <Route path="beheer" element={<InvitesPage />} />
                 <Route path="planner" element={<PlaceholderPage title="Planner" text="De toetsplanner komt in een volgende versie." />} />
-                <Route path="cijfers" element={<PlaceholderPage title="Cijfers" text="De cijfermodule komt in een volgende versie." />} />
+                <Route path="cijfers" element={<GradesPage />} />
+                <Route path="cijfers/importeren" element={<GradeImportPage />} />
+                <Route path="cijfers/:slug" element={<SubjectGradesPage />} />
                 <Route path="profiel" element={<ProfilePage />} />
                 <Route path="nieuw-wachtwoord" element={<NewPasswordPage />} />
                 <Route path="*" element={<PlaceholderPage title="Pagina niet gevonden" text="Deze pagina bestaat niet (meer)." />} />

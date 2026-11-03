@@ -3,7 +3,7 @@
 Leerdashboard voor VWO-leerlingen: per vak leren, toetsen plannen en cijfers bijhouden.
 Vite + React + TypeScript + Tailwind, gehost op GitHub Pages, met Supabase (Auth, Postgres, Storage, Edge Functions) als backend.
 
-> **Status:** fase 1 t/m 5 zijn klaar: project, auth, thema's, vakkeuze, template-systeem, lijsten, leervormen met spaced repetition, foto naar woordenlijst en foto naar samenvatting of uitwerking.
+> **Status:** fase 1 t/m 6 zijn klaar: project, auth, thema's, vakkeuze, template-systeem, lijsten, leervormen met spaced repetition, foto naar woordenlijst, foto naar samenvatting of uitwerking, en cijfers met screenshot-import.
 
 ## Architectuur in het kort
 
@@ -79,6 +79,7 @@ npm run test:db   # pgTAP: RLS, uitnodigingslijst, AI-limiet
    supabase functions deploy delete-account
    supabase functions deploy extract-list
    supabase functions deploy explain-photo
+   supabase functions deploy extract-grades
    ```
 7. Database-types opnieuw genereren na een migratie: `npm run db:types`.
 8. Zijn migraties via het dashboard of de MCP-koppeling toegepast in plaats van met `supabase db push`? Dan verschillen de versienummers. Kijk met `supabase migration list` en lijn ze eenmalig uit met `supabase migration repair --status applied <versie>`.
@@ -171,7 +172,27 @@ Let op: de uitnodigingslijst geldt ook voor Google-accounts.
 - **Kernbegrippen** worden met één knop een begrippenlijst, die je met alle leervormen kunt leren.
 - **Opslag:** tabel `notes`, met de inhoud als JSON en RLS per gebruiker. De foto's worden na het bewaren verwijderd; bij weggooien direct.
 
-## 8. Privacy en data
+## 8. Cijfers en bronnen
+
+- **Tabel `grades`:** cijfer (1–10), weging, datum, `counts` (telt mee ja/nee), `source` en `external_id`.
+  - De unieke index op `(user_id, source, external_id)` voorkomt dat dezelfde import twee keer wordt opgeslagen.
+  - Handmatige cijfers hebben geen `external_id`; je mag dus wel twee keer hetzelfde cijfer invoeren.
+- **Rekenen** (`src/features/grades/calc.ts`), bewust zonder overgangs- of slaag/zakregels:
+  - **Gemiddelde:** Σ(cijfer × weging) / Σ weging.
+  - **Lopend gemiddelde:** in een Recharts-grafiek.
+  - **Wat moet ik halen:** `(doel × (W + w) − Σ cijfer × weging) / w`, naar boven afgerond op één decimaal.
+  - **Wat als:** met fictieve cijfers.
+  - **Schooljaren** lopen van 1 augustus tot en met 31 juli.
+- **Screenshot-import:** foto of screenshot → Edge Function `extract-grades` → verplicht controlescherm.
+  - **Vakken herkennen:** vaknamen en Magister-afkortingen (`entl`, `wisB`, `biol` …) worden herkend in `subjectMatch.ts`; onbekende vakken kies je zelf.
+  - **Dubbele regels** gaan standaard uit: regels die je al hebt, en overlap tussen twee screenshots.
+  - **Na het uitlezen** wordt het screenshot meteen verwijderd.
+- **Bron-adapters** (`src/sources/`): `GradeSource` en `CalendarSource` met de modus `invoer` (`manual`), `import` (`screenshot`, `ics`) of `sync`.
+  - `ics` komt in fase 7.
+  - `magister` is een lege stub die ook met `VITE_FEATURE_MAGISTER=true` uit blijft. Zie [docs/magister-later.md](docs/magister-later.md).
+  - `tests/sources.test.ts` bewaakt dat er geen Magister-netwerk-, inlog- of tokencode bestaat.
+
+## 9. Privacy en data
 
 - Geen analytics, geen advertenties. De lettertypes worden mee-gebundeld, dus er gaan geen verzoeken naar Google Fonts.
 - Gebruikers kunnen op de profielpagina hun data exporteren (JSON) en hun account verwijderen.
@@ -181,7 +202,7 @@ Let op: de uitnodigingslijst geldt ook voor Google-accounts.
   2. Voeg ze toe aan `EXPORT_TABLES` in `src/lib/exportData.ts`.
   3. Voeg een pgTAP-test toe.
 
-## 9. Design-systeem: "papier & inkt"
+## 10. Design-systeem: "papier & inkt"
 
 - Alle kleuren zijn CSS-variabelen in `src/styles/tokens.css`. Tailwind leest ze via `@theme` (`bg-surface`, `text-muted`, `bg-accent`, …).
 - Het thema (licht, donker of systeem) staat in `localStorage` en in `profiles.theme`. Een inline script in `index.html` zet het thema vóór de eerste paint, zodat er geen flits is.
