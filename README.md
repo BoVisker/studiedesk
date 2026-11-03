@@ -3,7 +3,7 @@
 Leerdashboard voor VWO-leerlingen: per vak leren, toetsen plannen en cijfers bijhouden.
 Vite + React + TypeScript + Tailwind, gehost op GitHub Pages, met Supabase (Auth, Postgres, Storage, Edge Functions) als backend.
 
-> **Status:** fase 1 t/m 8 zijn klaar: project, auth, thema's, vakkeuze, template-systeem, lijsten, leervormen met spaced repetition, foto naar woordenlijst, foto naar samenvatting of uitwerking, cijfers met screenshot-import, de toetsplanner, en offline leren (PWA). ICS-agenda-import volgt zodra er een voorbeeldfeed is.
+> **Status:** fase 1 t/m 9 zijn klaar: project, auth, thema's, vakkeuze, template-systeem, lijsten, leervormen met spaced repetition, foto naar woordenlijst, foto naar samenvatting of uitwerking, cijfers met screenshot-import, de toetsplanner, offline leren (PWA), en uitlegvideo's. ICS-agenda-import volgt zodra er een voorbeeldfeed is.
 
 ## Architectuur in het kort
 
@@ -80,6 +80,7 @@ npm run test:db   # pgTAP: RLS, uitnodigingslijst, AI-limiet
    supabase functions deploy extract-list
    supabase functions deploy explain-photo
    supabase functions deploy extract-grades
+   supabase functions deploy search-videos
    ```
 7. Database-types opnieuw genereren na een migratie: `npm run db:types`.
 8. Zijn migraties via het dashboard of de MCP-koppeling toegepast in plaats van met `supabase db push`? Dan verschillen de versienummers. Kijk met `supabase migration list` en lijn ze eenmalig uit met `supabase migration repair --status applied <versie>`.
@@ -204,7 +205,32 @@ Let op: de uitnodigingslijst geldt ook voor Google-accounts.
 - **Opslag:** tabel `tests` (met `source`/`external_id` voor latere ICS-import) en `plan_checkoffs`, beide met RLS per gebruiker. Het maximum leermomenten per dag is een persoonlijke voorkeur in `localStorage`.
 - **ICS-agenda-import** (toetsen uit de agendalink van je school) staat klaar in de bron-architectuur (`icsCalendarSource`) maar is nog uit; die bouwen we zodra er een voorbeeld-`.ics` is om de herkenning op af te stemmen.
 
-## 10. Offline en installeren (PWA)
+## 10. Uitlegvideo's (YouTube)
+
+- **Blok "Uitlegvideo's"** op elke vakpagina. Je typt een onderwerp; de zoekopdracht wordt `"<vak> <onderwerp> uitleg"`.
+- **Edge Function `search-videos`** gebruikt de officiële YouTube Data API v3. De sleutel staat alleen als secret `YOUTUBE_API_KEY`, nooit in de frontend.
+- **Quota en kosten:** `search.list` kost 100 quota-eenheden per aanroep; de standaardquota is 10.000/dag (dus ~100 zoekopdrachten). Daarom:
+  - **gedeelde cache** (`video_cache`, 30 dagen): dezelfde zoekopdracht van alle gebruikers samen kost maar één keer quota;
+  - **dagbudget** (`video_budget` + `app_config.youtube_daily_searches`, standaard 80 echte zoekopdrachten/dag). Is het budget op, dan komt het antwoord uit de cache of krijg je alleen de zoeklink.
+  - Beide tabellen zijn gedeeld, bevatten geen persoonsgegevens en zijn met RLS dichtgezet; alleen de Edge Function (service-role) leest en schrijft erin.
+- **Privacyvriendelijk afspelen:** resultaten tonen alleen een titel en thumbnail. Een video speelt pas als je er zelf op klikt (**geen autoplay**) en wordt ingesloten via **youtube-nocookie** (`?rel=0`). `safeSearch=strict` staat aan.
+- **Fallback:** er is altijd een "Zoek verder op YouTube"-link, ook zonder resultaten of budget.
+- **Geen AI-credit:** video's zoeken gebruikt het YouTube-budget, niet de AI-limiet.
+
+### YouTube-sleutel aanmaken
+
+1. Maak in [Google Cloud Console](https://console.cloud.google.com) een project.
+2. Schakel **YouTube Data API v3** in (APIs & Services → Library).
+3. Maak een **API key** (APIs & Services → Credentials) en beperk hem tot YouTube Data API v3.
+4. Zet hem als secret: `supabase secrets set YOUTUBE_API_KEY=...`. Zonder sleutel toont het blok alleen de zoeklink.
+
+Het dagbudget aanpassen:
+
+```sql
+update public.app_config set value = '40' where key = 'youtube_daily_searches';
+```
+
+## 11. Offline en installeren (PWA)
 
 StudieDesk is een installeerbare PWA: je kunt woordenlijsten ook zonder internet leren.
 
@@ -222,7 +248,7 @@ Op iPhone/iPad gelden extra beperkingen van Safari/iOS:
 - iOS kan de offline-opslag (IndexedDB en caches) wissen na ongeveer **7 dagen** zonder gebruik van de geïnstalleerde app.
 - Er is **geen achtergrond-sync**: synchroniseren gebeurt wanneer je de app opent, niet vanzelf op de achtergrond.
 
-## 11. Privacy en data
+## 12. Privacy en data
 
 - Geen analytics, geen advertenties. De lettertypes worden mee-gebundeld, dus er gaan geen verzoeken naar Google Fonts.
 - Gebruikers kunnen op de profielpagina hun data exporteren (JSON) en hun account verwijderen.
@@ -232,7 +258,7 @@ Op iPhone/iPad gelden extra beperkingen van Safari/iOS:
   2. Voeg ze toe aan `EXPORT_TABLES` in `src/lib/exportData.ts`.
   3. Voeg een pgTAP-test toe.
 
-## 12. Design-systeem: "papier & inkt"
+## 13. Design-systeem: "papier & inkt"
 
 - Alle kleuren zijn CSS-variabelen in `src/styles/tokens.css`. Tailwind leest ze via `@theme` (`bg-surface`, `text-muted`, `bg-accent`, …).
 - Het thema (licht, donker of systeem) staat in `localStorage` en in `profiles.theme`. Een inline script in `index.html` zet het thema vóór de eerste paint, zodat er geen flits is.

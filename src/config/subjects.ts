@@ -34,7 +34,7 @@ export const archetypeLabels: Record<Archetype, string> = {
 
 // Elke vak-voorpagina begint en eindigt met dezelfde algemene blokken.
 const head: BlockId[] = ['volgende-toets', 'voortgang']
-const tail: BlockId[] = ['cijfers']
+const tail: BlockId[] = ['cijfers', 'uitleg-videos']
 
 const archetypeBlocks: Record<Archetype, BlockId[]> = {
   'moderne-taal': ['vandaag-herhalen', 'woordenlijsten', 'grammatica', 'onregelmatige-werkwoorden', 'schrijfvaardigheid', 'leesboeken'],

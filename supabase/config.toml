@@ -426,3 +426,6 @@ verify_jwt = false
 
 [functions.extract-grades]
 verify_jwt = false
+
+[functions.search-videos]
+verify_jwt = false

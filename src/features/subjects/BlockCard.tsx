@@ -9,6 +9,7 @@ import type { Grade } from '@/features/grades/api'
 import { schoolYear, weightedAverage } from '@/features/grades/calc'
 import { GradeValue, inYear } from '@/features/grades/GradeBits'
 import type { NoteKind } from '@/features/notes/types'
+import { VideoSearch } from '@/features/videos/VideoSearch'
 import type { BlockSetting } from './blockSettings'
 
 /** Gedeelde data voor alle blokken op een vakpagina (één keer geladen). */
@@ -43,6 +44,8 @@ export function BlockCard({ block, ctx }: { block: BlockSetting; ctx: BlockConte
       </div>
       {def.available === 'later' ? (
         <p className="text-sm text-muted">{def.description}</p>
+      ) : block.id === 'uitleg-videos' ? (
+        <VideoSearch subject={ctx.slug} />
       ) : ctx.error ? (
         <p className="text-sm text-danger">Kon de gegevens niet laden.</p>
       ) : !ctx.lists || !ctx.notes || !ctx.grades ? (

@@ -30,6 +30,7 @@ export const blockDefs = {
   kaartoefening: { title: 'Kaartoefening', description: 'Topografie oefenen.', available: 'later' },
   'code-snippets': { title: 'Code-snippets', description: 'Stukjes code met syntax-highlighting.', available: 'later' },
   aantekeningen: { title: 'Aantekeningen', description: 'Vrije notities.', available: 'later' },
+  'uitleg-videos': { title: 'Uitlegvideo\u2019s', description: 'Zoek uitlegvideo\u2019s bij dit vak (YouTube).', available: 'now' },
 } as const satisfies Record<string, { title: string; description: string; available: 'now' | 'later' }>
 
 export type BlockId = keyof typeof blockDefs
